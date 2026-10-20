@@ -146,15 +146,13 @@ export default function ResetPasswordPage() {
             </button>
           </div>
 
-          {password && (
-            <div className="pws" data-s={pwdStrength.score}>
-              <i />
-              <i />
-              <i />
-              <i />
-              <span>{pwdStrength.label}</span>
-            </div>
-          )}
+          <div className="pws" data-s={pwdStrength.score}>
+            <i />
+            <i />
+            <i />
+            <i />
+            <span>{pwdStrength.label}</span>
+          </div>
 
           <button
             type="submit"
@@ -182,3 +180,4 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
+

@@ -29,7 +29,7 @@ function ShortcutHandler() {
 
 function AppShellContent({ children }: { children: React.ReactNode }) {
   const { state, isLoading } = useApp();
-  const { openName } = useModal();
+  const { openName, openAccount } = useModal();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Initial onboarding check: if no name set, prompt for name
@@ -49,7 +49,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
       <main>
         <TopBar
           onOpenMobileMenu={() => setDrawerOpen(true)}
-          onOpenAccountModal={() => {}}
+          onOpenAccountModal={openAccount}
         />
         {children}
         <AppFooter />
@@ -76,3 +76,4 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </AppProvider>
   );
 }
+

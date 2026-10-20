@@ -106,7 +106,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div>
+    <>
       <AuthTabs />
       <div id="af">
         <h2>Create your account</h2>
@@ -266,15 +266,13 @@ export default function SignUpPage() {
               </button>
             </div>
 
-            {password && (
-              <div className="pws" data-s={pwdStrength.score}>
-                <i />
-                <i />
-                <i />
-                <i />
-                <span>{pwdStrength.label}</span>
-              </div>
-            )}
+            <div className="pws" data-s={pwdStrength.score}>
+              <i />
+              <i />
+              <i />
+              <i />
+              <span>{pwdStrength.label}</span>
+            </div>
 
             <label className="chk">
               <input
@@ -340,6 +338,6 @@ export default function SignUpPage() {
           Your data is encrypted and private
         </div>
       </div>
-    </div>
+    </>
   );
 }

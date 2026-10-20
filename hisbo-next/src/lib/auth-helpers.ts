@@ -36,3 +36,4 @@ export function calculatePasswordStrength(v: string): { score: number; label: st
   const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
   return { score: n, label: labels[n] || '' };
 }
+

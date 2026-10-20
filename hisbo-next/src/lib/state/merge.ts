@@ -74,3 +74,4 @@ export function mergeS(local: Partial<AppState> | null, cloud: Partial<AppState>
 
   return M;
 }
+

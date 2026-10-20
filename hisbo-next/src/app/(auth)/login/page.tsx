@@ -89,7 +89,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div>
+    <>
       <AuthTabs />
       <div id="af">
         <h2>Welcome back</h2>
@@ -251,6 +251,6 @@ export default function LoginPage() {
           Your data is encrypted and private
         </div>
       </div>
-    </div>
+    </>
   );
 }

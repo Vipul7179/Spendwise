@@ -103,3 +103,4 @@ export default function NameModal({ first = false }: NameModalProps) {
     </div>
   );
 }
+
