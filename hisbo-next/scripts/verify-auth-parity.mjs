@@ -1,7 +1,8 @@
 async function verifyAuthParity() {
+  const port = process.env.PORT || 3000;
   const [loginHtml, signupHtml] = await Promise.all([
-    fetch('http://localhost:3001/login').then(r => r.text()),
-    fetch('http://localhost:3001/signup').then(r => r.text()),
+    fetch(`http://localhost:${port}/login`).then(r => r.text()),
+    fetch(`http://localhost:${port}/signup`).then(r => r.text()),
   ]);
 
   const checks = [

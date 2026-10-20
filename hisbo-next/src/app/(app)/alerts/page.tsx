@@ -226,6 +226,7 @@ export default function AlertsPage() {
         <h2>Alert delivery</h2>
         <div className="row" style={{ marginBottom: '10px' }}>
           <select
+            id="chan"
             value={channel}
             onChange={(e) => {
               const ch = e.target.value as 'wa' | 'sms';

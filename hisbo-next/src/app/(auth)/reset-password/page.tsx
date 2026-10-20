@@ -88,7 +88,7 @@ export default function ResetPasswordPage() {
         </div>
       ) : (
         <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <label htmlFor="new-password" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+          <label htmlFor="new-password">
             New password
           </label>
           <div className="fl">

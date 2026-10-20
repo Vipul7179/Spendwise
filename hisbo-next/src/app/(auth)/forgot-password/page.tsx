@@ -120,7 +120,7 @@ export default function ForgotPasswordPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <label htmlFor="reset-email" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+          <label htmlFor="reset-email">
             Account email
           </label>
           <div className="fl">

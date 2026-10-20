@@ -15,6 +15,12 @@
   --bad: #e5483a;
   --ok: #14a37f;
   --line: #d8e9df;
+  --input-bg: #ffffff;
+  --input-border: #d8e9df;
+  --input-text: #0d2a21;
+  --input-placeholder: #5a7a6e;
+  --input-focus-border: #0f7a58;
+  --input-focus-ring: color-mix(in srgb, var(--acc) 18%, transparent);
   box-sizing: border-box;
 }
 
@@ -30,6 +36,12 @@
     --ok: #3fd1a8;
     --warn: #f5b301;
     --bad: #ff7a6b;
+    --input-bg: #0e2219;
+    --input-border: #1c3a2d;
+    --input-text: #e6f4ec;
+    --input-placeholder: #8db3a2;
+    --input-focus-border: #3fd9a0;
+    --input-focus-ring: color-mix(in srgb, var(--acc) 22%, transparent);
   }
 }
 
@@ -44,6 +56,12 @@
   --ok: #3fd1a8;
   --warn: #f5b301;
   --bad: #ff7a6b;
+  --input-bg: #0e2219;
+  --input-border: #1c3a2d;
+  --input-text: #e6f4ec;
+  --input-placeholder: #8db3a2;
+  --input-focus-border: #3fd9a0;
+  --input-focus-ring: color-mix(in srgb, var(--acc) 22%, transparent);
 }
 
 * {
@@ -127,6 +145,112 @@ a {
   padding: 20px;
   border: 1px solid var(--line);
   box-shadow: 0 1px 3px rgba(6, 40, 30, 0.05);
+}
+
+/* ====================================================================
+   Universal Form Fields & Inputs
+   Clean white background by default in light mode, matching Hisbo design tokens
+   ==================================================================== */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+select,
+textarea {
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--input-text);
+  background-color: var(--input-bg);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  padding: 11px 14px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+/* Flexible inputs inside flex rows (.row) */
+.row > input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+.row > select {
+  flex: 1 1 130px;
+  width: auto;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* Placeholder styling */
+input::placeholder,
+textarea::placeholder {
+  color: var(--input-placeholder);
+  opacity: 0.8;
+}
+
+/* Focus state */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 3.5px var(--input-focus-ring);
+  outline: none;
+  background-color: var(--input-bg);
+}
+
+/* Hover state */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]):hover:not(:focus):not(:disabled),
+select:hover:not(:focus):not(:disabled),
+textarea:hover:not(:focus):not(:disabled) {
+  border-color: color-mix(in srgb, var(--input-border) 70%, var(--acc));
+}
+
+/* Disabled state */
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.65;
+  background-color: color-mix(in srgb, var(--bg) 65%, var(--input-bg));
+  border-color: var(--line);
+  cursor: not-allowed;
+  color: var(--mut);
+}
+
+/* Error validation state */
+input.err,
+select.err,
+textarea.err,
+.fl input.err {
+  border-color: var(--bad) !important;
+  box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--bad) 20%, transparent) !important;
+}
+
+/* Dropdown styling */
+select {
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235a7a6e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+/* Checkbox styling */
+.chk input[type="checkbox"],
+.sw input[type="checkbox"],
+input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  flex: none !important;
+  padding: 0 !important;
+  margin: 2px 0 0 !important;
+  border-radius: 5px !important;
+  border: 1.5px solid var(--line) !important;
+  accent-color: var(--acc) !important;
+  cursor: pointer;
 }
 
 /* ====================================================================
@@ -1691,38 +1815,63 @@ a {
 .tabs.up .ind {
   transform: translateX(100%);
 }
+.ab label:not(.chk),
+.lbl,
+label.lbl {
+  display: block;
+  align-self: flex-start;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--mut);
+  margin-bottom: 2px;
+  letter-spacing: -0.01em;
+}
 .fl {
   position: relative;
   width: 100%;
+  box-sizing: border-box;
 }
 .fl > svg {
   position: absolute;
-  left: 13px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   width: 18px;
   height: 18px;
   color: var(--mut);
   pointer-events: none;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
+  z-index: 2;
 }
 .fl input {
-  padding: 13px 44px 13px 42px !important;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: normal;
+  color: var(--input-text);
+  background-color: var(--input-bg) !important;
+  background: var(--input-bg) !important;
+  border: 1px solid var(--input-border);
+  border-radius: 14px;
+  height: 48px;
+  padding: 12px 46px 12px 44px !important;
   width: 100%;
   box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .fl:focus-within > svg {
   color: var(--acc);
 }
 .fl input:focus {
-  border-color: var(--acc);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--acc) 18%, transparent);
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 3.5px var(--input-focus-ring);
   outline: none;
+  background-color: var(--input-bg) !important;
 }
 .eye {
   position: absolute;
-  right: 6px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
   width: 34px;
@@ -1734,6 +1883,12 @@ a {
   border-radius: 50%;
   display: grid;
   place-items: center;
+  z-index: 2;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+.eye:hover {
+  color: var(--acc);
+  background-color: color-mix(in srgb, var(--acc) 10%, transparent);
 }
 .eye svg {
   width: 18px;
@@ -1904,16 +2059,22 @@ a {
   }
   .ap {
     flex: 0 0 min(46%, 520px);
+    display: flex;
+    justify-content: center;
     align-items: center;
     margin: 0;
     padding: 32px;
+    background: var(--card);
+    border-left: 1px solid var(--line);
     overflow-y: auto;
   }
   .ap .ab {
+    width: min(100%, 400px);
     background: none;
     border: 0;
     box-shadow: none;
     padding: 0;
+    margin: 0 auto;
   }
   .fcs {
     display: block;

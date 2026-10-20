@@ -112,7 +112,7 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <label htmlFor="login-email" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+          <label htmlFor="login-email">
             Email
           </label>
           <div className="fl">
@@ -140,7 +140,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <label htmlFor="login-password" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+          <label htmlFor="login-password">
             Password
           </label>
           <div className="fl">

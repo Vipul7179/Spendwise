@@ -19,11 +19,12 @@ const routes = [
 ];
 
 async function run() {
-  console.log('Testing Next.js routes on http://localhost:3001 ...\n');
+  const port = process.env.PORT || 3000;
+  console.log(`Testing Next.js routes on http://localhost:${port} ...\n`);
   let failures = 0;
   for (const r of routes) {
     try {
-      const res = await fetch('http://localhost:3001' + r);
+      const res = await fetch(`http://localhost:${port}${r}`);
       const text = await res.text();
       const hasBad = /skeleton|placeholder\s*route|coming\s*soon/i.test(text);
       const ok = res.status === 200 && !hasBad;
@@ -46,3 +47,4 @@ async function run() {
 }
 
 run();
+

@@ -152,7 +152,7 @@ export default function SignUpPage() {
 
         {!successMessage && (
           <form onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <label htmlFor="signup-name" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+            <label htmlFor="signup-name">
               Your name
             </label>
             <div className="fl">
@@ -180,7 +180,7 @@ export default function SignUpPage() {
               />
             </div>
 
-            <label htmlFor="signup-email" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+            <label htmlFor="signup-email">
               Email
             </label>
             <div className="fl">
@@ -208,7 +208,7 @@ export default function SignUpPage() {
               />
             </div>
 
-            <label htmlFor="signup-password" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+            <label htmlFor="signup-password">
               Password
             </label>
             <div className="fl">
