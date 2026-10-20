@@ -32,7 +32,7 @@ export default function GroupsPage() {
   const [expDesc, setExpDesc] = useState('');
   const [expAmt, setExpAmt] = useState('');
   const [expPayer, setExpPayer] = useState(0);
-  const [expWith, setExpWith] = useState<number[]>([]);
+  const [expWith, setExpWith] = useState<number[]>(currentGroup?.members.map((_, index) => index) || []);
 
   // Phone Modal
   const [editingPhoneMember, setEditingPhoneMember] = useState<{ index: number; name: string } | null>(null);
@@ -42,13 +42,13 @@ export default function GroupsPage() {
   const [showDeleteGroupModal, setShowDeleteGroupModal] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<GroupExpense | null>(null);
 
-  // Initialize split members when group changes
-  React.useEffect(() => {
-    if (currentGroup) {
-      setExpWith(currentGroup.members.map((_, i) => i));
-      setExpPayer(0);
-    }
-  }, [currentGroup?.id, currentGroup?.members.length]);
+  const splitKey = JSON.stringify([currentGroup?.id, currentGroup?.members.length]);
+  const [renderedSplit, setRenderedSplit] = useState(splitKey);
+  if (renderedSplit !== splitKey) {
+    setRenderedSplit(splitKey);
+    setExpWith(currentGroup?.members.map((_, index) => index) || []);
+    setExpPayer(0);
+  }
 
   // Group calculations
   const dues = useMemo(() => (currentGroup ? gDues(currentGroup) : []), [currentGroup]);

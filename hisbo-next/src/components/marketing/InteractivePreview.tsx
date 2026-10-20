@@ -125,7 +125,7 @@ export default function InteractivePreview() {
       </div>
 
       {/* Floating interactive status pills */}
-      <div className="fcl a">
+      <div className="fcl preview-payment">
         <span className="ic2" style={{ background: 'color-mix(in srgb, var(--ok) 16%, transparent)', color: 'var(--ok)' }}>
           {SVG_ICONS.user}
         </span>
@@ -135,7 +135,7 @@ export default function InteractivePreview() {
         </div>
       </div>
 
-      <div className="fcl b">
+      <div className="fcl preview-budget">
         <span className="ic2" style={{ background: 'color-mix(in srgb, var(--warn) 18%, transparent)', color: 'var(--warn)' }}>
           {SVG_ICONS.alert}
         </span>
@@ -145,7 +145,7 @@ export default function InteractivePreview() {
         </div>
       </div>
 
-      <div className="fcl c">
+      <div className="fcl preview-goal">
         <span className="ic2" style={{ background: 'color-mix(in srgb, var(--acc) 16%, transparent)', color: 'var(--acc)' }}>
           {SVG_ICONS.goal}
         </span>

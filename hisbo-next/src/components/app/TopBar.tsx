@@ -51,22 +51,13 @@ export default function TopBar({ onOpenMobileMenu, onOpenAccountModal }: TopBarP
       </Link>
 
       <div className="tr">
-        <div className="tools" role="toolbar" aria-label="Quick settings" style={{ display: 'flex', gap: '8px' }}>
+        <div className="tools" role="toolbar" aria-label="Quick settings">
           {/* Privacy Eye Toggle */}
           <button
             className={`ib ${isHidden ? 'on' : ''}`}
             onClick={toggleHide}
             aria-label={isHidden ? 'Show amounts' : 'Hide amounts'}
             title={isHidden ? 'Show amounts' : 'Hide amounts'}
-            style={{
-              background: 'none',
-              border: 0,
-              cursor: 'pointer',
-              color: 'var(--ink)',
-              padding: '6px',
-              display: 'grid',
-              placeItems: 'center',
-            }}
           >
             <svg
               width="22"
@@ -101,15 +92,6 @@ export default function TopBar({ onOpenMobileMenu, onOpenAccountModal }: TopBarP
             onClick={cycleTheme}
             aria-label={`Theme: ${currentTheme}. Tap to change`}
             title={`Theme: ${currentTheme}. Tap to change`}
-            style={{
-              background: 'none',
-              border: 0,
-              cursor: 'pointer',
-              color: 'var(--ink)',
-              padding: '6px',
-              display: 'grid',
-              placeItems: 'center',
-            }}
           >
             <svg
               width="22"
@@ -157,14 +139,6 @@ export default function TopBar({ onOpenMobileMenu, onOpenAccountModal }: TopBarP
           className="ib menu-toggle"
           onClick={onOpenMobileMenu}
           aria-label="Open menu"
-          style={{
-            background: 'none',
-            border: 0,
-            cursor: 'pointer',
-            color: 'var(--ink)',
-            padding: '6px',
-            placeItems: 'center',
-          }}
         >
           <svg
             width="22"

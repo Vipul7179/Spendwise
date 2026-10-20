@@ -1,11 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import LoginForm from '@/components/auth/LoginForm';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { getFriendlyAuthErrorMessage } from '@/lib/auth-helpers';
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const element = dialog.current;
+    if (!element) return;
+    element.close();
+    element.showModal();
+  }, []);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +52,10 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div id="af">
+    <>
+      <LoginForm />
+      <dialog open ref={dialog} className="forgot-dialog" aria-labelledby="forgot-title" onCancel={() => router.push('/login')}>
+      <div id="reset-form">
       <div style={{ textAlign: 'center', marginBottom: '14px' }}>
         <div
           className="av"
@@ -72,7 +85,7 @@ export default function ForgotPasswordPage() {
             <path d="m22 7-10 6L2 7" />
           </svg>
         </div>
-        <h2>Forgot your password?</h2>
+        <h2 id="forgot-title">Forgot your password?</h2>
         <p className="mut" style={{ margin: '6px 0 0' }}>
           Enter your account email and we will send you a link to set a new password.
         </p>
@@ -121,7 +134,7 @@ export default function ForgotPasswordPage() {
       ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <label htmlFor="reset-email">
-            Account email
+            Email
           </label>
           <div className="fl">
             <svg
@@ -142,6 +155,7 @@ export default function ForgotPasswordPage() {
               placeholder="you@example.com"
               maxLength={80}
               autoComplete="email"
+              autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -172,6 +186,8 @@ export default function ForgotPasswordPage() {
         </form>
       )}
     </div>
+      </dialog>
+    </>
   );
 }
 

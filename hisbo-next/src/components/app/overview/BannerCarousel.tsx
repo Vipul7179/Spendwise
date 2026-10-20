@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo, useSyncExternalStore } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 interface Banner {
@@ -23,8 +23,24 @@ function safeUrl(v: string | null): string {
   }
 }
 
+function subscribeToCache(callback: () => void) {
+  window.addEventListener('storage', callback);
+  return () => window.removeEventListener('storage', callback);
+}
+function cachedSnapshot() {
+  try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
+}
+
 export default function BannerCarousel() {
-  const [banners, setBanners] = useState<Banner[]>([]);
+  const [liveBanners, setBanners] = useState<Banner[] | null>(null);
+  const cached = useSyncExternalStore(subscribeToCache, cachedSnapshot, () => null);
+  const cachedBanners = useMemo<Banner[]>(() => {
+    try {
+      const parsed = cached ? JSON.parse(cached) : [];
+      return Array.isArray(parsed) ? parsed.filter(banner => safeUrl(banner.image_url)) : [];
+    } catch { return []; }
+  }, [cached]);
+  const banners = liveBanners ?? cachedBanners;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -32,16 +48,6 @@ export default function BannerCarousel() {
 
   // Load from cache then fetch live
   useEffect(() => {
-    try {
-      const cached = localStorage.getItem(STORAGE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setBanners(parsed);
-        }
-      }
-    } catch {}
-
     const fetchBanners = async () => {
       try {
         const supabase = createClient();

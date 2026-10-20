@@ -26,7 +26,9 @@ async function run() {
     try {
       const res = await fetch(`http://localhost:${port}${r}`);
       const text = await res.text();
-      const hasBad = /skeleton|placeholder\s*route|coming\s*soon/i.test(text);
+      // App Router streams loading.tsx before the completed page. A skeleton in
+      // that response is expected and does not mean the route is a placeholder.
+      const hasBad = /placeholder\s*route|coming\s*soon/i.test(text);
       const ok = res.status === 200 && !hasBad;
       if (!ok) failures++;
       console.log(

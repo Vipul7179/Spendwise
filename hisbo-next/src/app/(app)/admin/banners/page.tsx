@@ -1,22 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { createClient } from '@/lib/supabase/client';
 
-interface BannerItem {
-  id: string;
-  title: string | null;
-  description: string | null;
-  image_url: string;
-  image_path: string | null;
-  link_url: string | null;
-  sort_order: number;
-  is_active: boolean;
-  created_at?: string;
-}
+import type { BannerItem } from '@/types/banner';
+import { saveBannerWithImage } from '@/lib/banners';
 
 function safeUrl(v: string | null): string {
   if (!v) return '';
@@ -79,34 +70,25 @@ export default function AdminBannersPage() {
   // Delete Modal state
   const [bannerToDelete, setBannerToDelete] = useState<BannerItem | null>(null);
 
-  const fetchBanners = useCallback(async () => {
-    try {
-      setLoadingBanners(true);
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('banners')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false });
-
+  const userId = user?.id;
+  useEffect(() => {
+    if (isLoading || !userId || !isAdmin) return;
+    let active = true;
+    const readBanners = async () => {
+      return await createClient().from('banners').select('*')
+        .order('sort_order', { ascending: true }).order('created_at', { ascending: false });
+    };
+    void readBanners().then(({ data, error }) => {
+      if (!active) return;
       if (error) throw error;
       setBanners(data || []);
-    } catch (err: any) {
-      console.error('[Admin] Fetch banners error:', err);
-      showToast(err.message || 'Could not load banners.', 'err');
-    } finally {
-      setLoadingBanners(false);
-    }
-  }, [showToast]);
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!user || !isAdmin) {
-        return;
-      }
-      fetchBanners();
-    }
-  }, [isLoading, user, isAdmin, fetchBanners]);
+    }).catch(error => {
+      if (active) showToast(error.message || 'Could not load banners.', 'err');
+    }).finally(() => {
+      if (active) setLoadingBanners(false);
+    });
+    return () => { active = false; };
+  }, [isLoading, userId, isAdmin, showToast]);
 
   if (isLoading) {
     return (
@@ -221,6 +203,10 @@ export default function AdminBannersPage() {
     }
 
     const trimmedImgUrl = formImageUrl.trim();
+    if (!formFile && trimmedImgUrl && !safeUrl(trimmedImgUrl)) {
+      showToast('Enter a valid image link starting with https:// or http://.', 'err');
+      return;
+    }
     if (!formFile && !trimmedImgUrl && (!editingBanner || !editingBanner.image_url)) {
       showToast('Choose an image or paste an image link.', 'err');
       return;
@@ -229,73 +215,31 @@ export default function AdminBannersPage() {
     setIsSaving(true);
     try {
       const supabase = createClient();
-      let finalImgUrl = editingBanner?.image_url || '';
-      let finalImgPath = editingBanner?.image_path || null;
-
+      let upload: { path: string; file: File } | undefined;
       if (formFile) {
         const smallFile = await shrinkImg(formFile);
         if (smallFile.size > 2 * 1024 * 1024) {
           throw new Error('Image is still over 2 MB. Please choose a smaller image.');
         }
-
         const ext = smallFile.type === 'image/webp' ? 'webp' : smallFile.type === 'image/png' ? 'png' : 'jpg';
-        const uploadPath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('banners')
-          .upload(uploadPath, smallFile, { contentType: smallFile.type, upsert: false });
-
-        if (uploadError) throw uploadError;
-
-        const { data: publicUrlData } = supabase.storage.from('banners').getPublicUrl(uploadPath);
-
-        // Delete previous storage image if replaced
-        if (editingBanner?.image_path) {
-          await supabase.storage.from('banners').remove([editingBanner.image_path]);
-        }
-
-        finalImgUrl = publicUrlData.publicUrl;
-        finalImgPath = uploadPath;
-      } else if (trimmedImgUrl && trimmedImgUrl !== editingBanner?.image_url) {
-        if (editingBanner?.image_path) {
-          await supabase.storage.from('banners').remove([editingBanner.image_path]);
-        }
-        finalImgUrl = trimmedImgUrl;
-        finalImgPath = null;
+        upload = { path: `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`, file: smallFile };
       }
-
+      const externalReplacement = !formFile && trimmedImgUrl && trimmedImgUrl !== editingBanner?.image_url;
       const payload = {
         title: trimmedTitle || null,
         description: trimmedDesc || null,
         link_url: trimmedLink ? safeUrl(trimmedLink) : null,
-        image_url: finalImgUrl,
-        image_path: finalImgPath,
+        image_url: externalReplacement ? trimmedImgUrl : editingBanner?.image_url || '',
+        image_path: externalReplacement ? null : editingBanner?.image_path || null,
         sort_order: orderNum,
         is_active: formActive,
       };
-
-      if (editingBanner) {
-        const { data, error } = await supabase
-          .from('banners')
-          .update(payload)
-          .eq('id', editingBanner.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        setBanners((prev) => prev.map((b) => (b.id === editingBanner.id ? data : b)));
-        showToast('Banner updated.');
-      } else {
-        const { data, error } = await supabase
-          .from('banners')
-          .insert(payload)
-          .select()
-          .single();
-
-        if (error) throw error;
-        setBanners((prev) => [data, ...prev]);
-        showToast('Banner created.');
-      }
+      const { banner, cleanupWarning } = await saveBannerWithImage(supabase, payload, editingBanner, upload);
+      setBanners(previous => editingBanner
+        ? previous.map(item => item.id === editingBanner.id ? banner : item)
+        : [banner, ...previous]);
+      showToast(cleanupWarning ? 'Banner saved. The previous image could not be cleaned up.'
+        : editingBanner ? 'Banner updated.' : 'Banner created.', cleanupWarning ? 'warn' : 'ok');
 
       setIsFormOpen(false);
     } catch (err: any) {
@@ -518,6 +462,7 @@ export default function AdminBannersPage() {
                   type="submit"
                   className="b cta"
                   disabled={isSaving}
+                  style={{ width: '100%', marginBottom: '8px' }}
                 >
                   {isSaving ? 'Saving…' : 'Save banner'}
                 </button>
@@ -525,6 +470,7 @@ export default function AdminBannersPage() {
                   type="button"
                   className="g"
                   disabled={isSaving}
+                  style={{ width: '100%' }}
                   onClick={() => setIsFormOpen(false)}
                 >
                   Cancel
@@ -559,6 +505,7 @@ export default function AdminBannersPage() {
               <button
                 type="button"
                 className="b dng"
+                style={{ width: '100%', background: 'var(--bad)', color: '#fff', marginTop: '8px' }}
                 onClick={handleDeleteBanner}
               >
                 Delete
@@ -566,6 +513,7 @@ export default function AdminBannersPage() {
               <button
                 type="button"
                 className="g"
+                style={{ width: '100%', marginTop: '6px' }}
                 onClick={() => setBannerToDelete(null)}
               >
                 Cancel

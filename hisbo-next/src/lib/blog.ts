@@ -1,6 +1,19 @@
 import { createPublicClient } from './supabase/public';
 import { BlogPost, BlogCategory } from '@/types/blog';
 
+export const BLOG_PAGE_SIZE = 6;
+
+export class BlogDataError extends Error {
+  constructor(public kind: 'config' | 'network') {
+    super(kind === 'config' ? 'The journal is not configured.' : 'Could not load the journal. Please try again.');
+    this.name = 'BlogDataError';
+  }
+}
+
+function blogFailureKind(): 'config' | 'network' {
+  return process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'network' : 'config';
+}
+
 export function formatBlogDate(value: string | null | undefined, includeTime = false): string {
   if (!value) return '';
   const date = new Date(value);
@@ -97,7 +110,7 @@ export async function getPublishedBlogPosts(options?: {
   offset?: number;
   categoryId?: string;
   search?: string;
-}): Promise<{ posts: BlogPost[]; total: number }> {
+}): Promise<{ posts: BlogPost[]; total: number; error?: 'config' | 'network' }> {
   try {
     const supabase = createPublicClient();
     const now = new Date().toISOString();
@@ -127,7 +140,7 @@ export async function getPublishedBlogPosts(options?: {
     const { data, count, error } = await query;
     if (error) {
       console.error('[Blog] Error fetching posts:', error);
-      return { posts: [], total: 0 };
+      return { posts: [], total: 0, error: 'network' };
     }
 
     return {
@@ -136,7 +149,8 @@ export async function getPublishedBlogPosts(options?: {
     };
   } catch (error) {
     console.error('[Blog] Server client error:', error);
-    return { posts: [], total: 0 };
+    const configured = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    return { posts: [], total: 0, error: configured ? 'network' : 'config' };
   }
 }
 
@@ -156,13 +170,13 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 
     if (error) {
       console.error('[Blog] Error fetching post by slug:', error);
-      return null;
+      throw new BlogDataError('network');
     }
 
     return (data as BlogPost) || null;
   } catch (error) {
     console.error('[Blog] Server client error fetching slug:', error);
-    return null;
+    throw error instanceof BlogDataError ? error : new BlogDataError(blogFailureKind());
   }
 }
 
@@ -202,7 +216,7 @@ export async function getRelatedBlogPosts(
   }
 }
 
-export async function getBlogCategories(): Promise<BlogCategory[]> {
+export async function getBlogCategoriesResult(): Promise<{ categories: BlogCategory[]; error?: 'config' | 'network' }> {
   try {
     const supabase = createPublicClient();
     const { data, error } = await supabase
@@ -213,13 +227,19 @@ export async function getBlogCategories(): Promise<BlogCategory[]> {
 
     if (error) {
       console.warn('[Blog] Error fetching categories:', error);
-      return [];
+      return { categories: [], error: 'network' };
     }
 
-    return (data as BlogCategory[]) || [];
+    return { categories: (data as BlogCategory[]) || [] };
   } catch (error) {
     console.warn('[Blog] Error fetching categories:', error);
-    return [];
+    return { categories: [], error: blogFailureKind() };
   }
 }
 
+
+export async function getBlogCategories(): Promise<BlogCategory[]> {
+  const result = await getBlogCategoriesResult();
+  if (result.error) throw new BlogDataError(result.error);
+  return result.categories;
+}

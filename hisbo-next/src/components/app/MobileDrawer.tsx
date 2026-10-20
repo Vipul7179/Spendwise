@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -45,9 +45,37 @@ const SECONDARY_LINKS = [
 ];
 
 export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
+  const drawerRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
   const { state, user, isGuest, syncStatus, isAdmin, syncNow, logout, showToast } = useApp();
   const { openName } = useModal();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const alreadyLocked = document.body.classList.contains('drawer-open');
+    document.body.classList.add('drawer-open');
+    drawerRef.current?.querySelector<HTMLButtonElement>('.drawer-close')?.focus();
+    return () => {
+      if (!alreadyLocked) document.body.classList.remove('drawer-open');
+      previousFocus?.focus();
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); onClose(); }
+      if (event.key !== 'Tab') return;
+      const controls = drawerRef.current?.querySelectorAll<HTMLElement>('a[href], button:not(:disabled)');
+      if (!controls?.length) return;
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -65,8 +93,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
   };
 
   const handleSignOut = async () => {
-    onClose();
-    await logout();
+    if (await logout()) onClose();
   };
 
   const supHref = () => {
@@ -84,6 +111,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         aria-hidden="true"
       />
       <aside
+        ref={drawerRef}
         className="mobile-drawer open"
         role="dialog"
         aria-modal="true"

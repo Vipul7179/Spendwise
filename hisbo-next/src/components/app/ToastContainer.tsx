@@ -1,6 +1,7 @@
 'use client';
 
 import { useApp } from '@/context/AppContext';
+import { maskAmounts } from '@/lib/state/calculations';
 
 const ICONS = {
   ok: (
@@ -29,7 +30,7 @@ const TITLES = {
 };
 
 export default function ToastContainer() {
-  const { toastInfo, dismissToast } = useApp();
+  const { state, toastInfo, dismissToast } = useApp();
 
   if (!toastInfo) return null;
 
@@ -42,11 +43,12 @@ export default function ToastContainer() {
       <span className="ti">{ICONS[toastInfo.type]}</span>
       <div className="tt">
         <b>{TITLES[toastInfo.type]}</b>
-        <span>{toastInfo.msg}</span>
+        <span>{state.hide ? maskAmounts(toastInfo.msg) : toastInfo.msg}</span>
       </div>
       <button className="tx" aria-label="Dismiss toast">
         &times;
       </button>
+      <i key={toastInfo.id} className="tp" aria-hidden="true" />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   spent,
 } from '@/lib/state/calculations';
 import { Expense } from '@/types/state';
+import { heroIsHidden } from '@/lib/state/transitions';
 import BannerCarousel from '@/components/app/overview/BannerCarousel';
 import DateBar, { formatMonthLabel } from '@/components/app/overview/DateBar';
 import OverviewCharts from '@/components/app/overview/OverviewCharts';
@@ -57,8 +58,9 @@ function getWeekRange(dateStr: string): [string, string] {
 }
 
 export default function OverviewPage() {
-  const { state, addExpense, deleteExpense, toggleHide, showToast } = useApp();
+  const { state, addExpense, deleteExpense, toggleHeroHide, showToast } = useApp();
   const { openName } = useModal();
+  const heroHidden = heroIsHidden(state);
 
   const currentMonth = mk(NOW());
   const todayStr = NOW();
@@ -101,7 +103,7 @@ export default function OverviewPage() {
   const vsLabel = isCurrentMonth ? 'last month' : 'the previous month';
   const comparisonText = useMemo(() => {
     if (selectedDay) {
-      return `Month total ${fmt(totalSpentMonth, state.hide)}`;
+      return `Month total ${fmt(totalSpentMonth, heroHidden)}`;
     }
     if (prevMonthTotal === 0) {
       return `No spending recorded ${vsLabel}`;
@@ -111,7 +113,7 @@ export default function OverviewPage() {
       return `→ Same as ${vsLabel}`;
     }
     return `${diffPct < 0 ? '↓ ' : '↑ '}${Math.abs(diffPct)}% vs ${vsLabel}`;
-  }, [selectedDay, totalSpentMonth, prevMonthTotal, vsLabel, state.hide]);
+  }, [selectedDay, totalSpentMonth, prevMonthTotal, vsLabel, heroHidden]);
 
   // Today & Week calculations
   const todaySpent = useMemo(
@@ -206,7 +208,7 @@ export default function OverviewPage() {
   };
 
   return (
-    <div>
+    <div className="overview-page">
       {/* Greeting Header */}
       <div className="gr">
         <div className="mut">{greeting},</div>
@@ -220,12 +222,12 @@ export default function OverviewPage() {
         <button
           type="button"
           className="heye"
-          onClick={toggleHide}
-          aria-label={state.hide ? 'Show amounts' : 'Hide amounts'}
-          title={state.hide ? 'Show amounts' : 'Hide amounts'}
+          onClick={toggleHeroHide}
+          aria-label={heroHidden ? 'Show amounts' : 'Hide amounts'}
+          title={heroHidden ? 'Show amounts' : 'Hide amounts'}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            {state.hide ? (
+            {heroHidden ? (
               <>
                 <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 10 7 10 7a13.2 13.2 0 0 1-1.67 2.68" />
                 <path d="M6.61 6.61A13.5 13.5 0 0 0 2 11s3 7 10 7a9.7 9.7 0 0 0 5.39-1.61" />
@@ -260,7 +262,7 @@ export default function OverviewPage() {
         </div>
 
         <div className="big" id="bt">
-          {fmt(heroBigAmount, state.hide)}
+          {fmt(heroBigAmount, heroHidden)}
         </div>
 
         <div className="hd">{comparisonText}</div>
@@ -268,22 +270,22 @@ export default function OverviewPage() {
         <div className="tiles">
           <div className="tile">
             <span>Today</span>
-            <b>{fmt(todaySpent, state.hide)}</b>
+            <b>{fmt(todaySpent, heroHidden)}</b>
             <small>{fS(todayStr)}</small>
           </div>
           <div className="tile">
             <span>{selectedDay ? `Week of ${fS(weekRange[0])}` : 'This week'}</span>
-            <b>{fmt(weekSpent, state.hide)}</b>
+            <b>{fmt(weekSpent, heroHidden)}</b>
             <small>{`${fS(weekRange[0])} – ${fS(weekRange[1])}`}</small>
           </div>
           <div className="tile">
             <span>{remainingBudget < 0 ? 'Over budget by' : 'Remaining budget'}</span>
-            <b>{fmt(Math.abs(remainingBudget), state.hide)}</b>
+            <b>{fmt(Math.abs(remainingBudget), heroHidden)}</b>
             <small>{formatMonthLabel(selectedMonth)}</small>
           </div>
           <div className="tile">
             <span>Monthly budget</span>
-            <b>{fmt(monthlyBudgetLimit, state.hide)}</b>
+            <b>{fmt(monthlyBudgetLimit, heroHidden)}</b>
             <small>{Math.round(budgetPercentUsed)}% used</small>
           </div>
         </div>
@@ -355,7 +357,7 @@ export default function OverviewPage() {
         <div className="grid" style={{ alignContent: 'start' }}>
           <div className="card">
             <h2>Add expense</h2>
-            <form onSubmit={handleAddExpenseSubmit}>
+            <form className="expense-form" onSubmit={handleAddExpenseSubmit}>
               <div className="row">
                 <input
                   id="ea"
@@ -479,12 +481,12 @@ export default function OverviewPage() {
                 : '';
 
             return (
-              <div key={e.id} className="li">
-                <div className="row" style={{ flexWrap: 'nowrap' }}>
+              <div key={e.id} className="li expense-row">
+                <div className="expense-identity">
                   <div className="ic" style={{ background: color }}>
                     {initial}
                   </div>
-                  <div>
+                  <div className="expense-description">
                     {e.note || catObj?.name || 'Expense'}
                     <div className="mut">
                       {fD(e.date)}
@@ -493,7 +495,7 @@ export default function OverviewPage() {
                   </div>
                 </div>
 
-                <div className="row" style={{ flexWrap: 'nowrap' }}>
+                <div className="expense-actions">
                   <span className="amt">{fmt(e.amt, state.hide)}</span>
                   <button
                     type="button"

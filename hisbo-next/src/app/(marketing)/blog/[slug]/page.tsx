@@ -1,14 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Navbar from '@/components/marketing/Navbar';
-import Footer from '@/components/marketing/Footer';
 import BlogCard from '@/components/blog/BlogCard';
 import {
   getBlogPostBySlug,
   getRelatedBlogPosts,
   getBlogCategories,
-  getPublishedBlogPosts,
   blogTimestampMeta,
   safeBlogImage,
 } from '@/lib/blog';
@@ -18,13 +15,6 @@ interface BlogPostPageProps {
   params: Promise<{
     slug: string;
   }>;
-}
-
-export async function generateStaticParams() {
-  const { posts } = await getPublishedBlogPosts({ limit: 50 });
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
@@ -131,14 +121,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   };
 
   return (
-    <div className="lp">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
       />
-      <Navbar />
 
-      <main className="blog-shell blog-article">
+      <section className="blog-shell blog-article">
         <div className="row">
           <Link className="backlink" href="/blog">
             &larr; Back to blog
@@ -208,9 +197,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </div>
           </section>
         )}
-      </main>
+      </section>
 
-      <Footer />
-    </div>
+    </>
   );
 }

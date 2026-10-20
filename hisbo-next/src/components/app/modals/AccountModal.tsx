@@ -24,8 +24,7 @@ export default function AccountModal() {
   };
 
   const handleLogout = async () => {
-    closeModal();
-    await logout();
+    if (await logout()) closeModal();
   };
 
   const supHref = () => {

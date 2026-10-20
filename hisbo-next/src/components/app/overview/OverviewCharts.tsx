@@ -114,7 +114,7 @@ export default function OverviewCharts({
 
     return (
       <>
-        <div className="donut" style={{ position: 'relative', width: 'min(100%, 250px)', margin: '0 auto' }}>
+        <div className="donut">
           <svg viewBox="0 0 42 42" style={{ display: 'block', width: '100%' }}>
             <circle r="15.9155" cx="21" cy="21" fill="none" stroke="var(--line)" strokeWidth="6" />
             <g transform="rotate(-90 21 21)">{segments}</g>
@@ -132,10 +132,10 @@ export default function OverviewCharts({
               pointerEvents: 'none',
             }}
           >
-            <span className="mut" style={{ fontSize: '0.85rem' }}>
+            <span className="mut" style={{ fontSize: '0.85em' }}>
               {activeRow ? activeRow.name : totalSpent ? 'Total spent' : 'No spending yet'}
             </span>
-            <b style={{ fontSize: '1.5rem', letterSpacing: '-0.03em' }}>
+            <b style={{ fontSize: '1.5em', letterSpacing: '-0.03em' }}>
               {fmt(activeRow ? activeRow.v : totalSpent, state.hide)}
             </b>
             {activeRow && (
@@ -215,7 +215,7 @@ export default function OverviewCharts({
 
     return (
       <>
-        <div className="donut" style={{ position: 'relative', width: 'min(100%, 250px)', margin: '0 auto' }}>
+        <div className="donut">
           <svg viewBox="0 0 42 42" style={{ display: 'block', width: '100%' }}>
             <circle r="10.5" cx="21" cy="21" fill="none" stroke="var(--line)" strokeWidth="21" />
             <g transform="rotate(-90 21 21)">{slices}</g>
@@ -228,7 +228,7 @@ export default function OverviewCharts({
           </b>{' '}
           <span>{activeRow ? activeRow.name : totalSpent ? 'Total spent' : 'No spending yet'}</span>{' '}
           {activeRow && (
-            <span className="mut" style={{ fontSize: '0.85rem' }}>
+            <span className="mut" style={{ fontSize: '0.85em' }}>
               {Math.round((activeRow.v / totalSpent) * 100)}% of spending
             </span>
           )}

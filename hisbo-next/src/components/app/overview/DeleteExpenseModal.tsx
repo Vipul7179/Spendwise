@@ -30,7 +30,7 @@ export default function DeleteExpenseModal({
         if (e.target === e.currentTarget) onCancel();
       }}
     >
-      <div className="box" role="dialog" aria-modal="true" aria-label="Delete expense">
+      <div className="box expense-delete-dialog" role="dialog" aria-modal="true" aria-label="Delete expense">
         <div className="nm">
           <div className="av bad">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

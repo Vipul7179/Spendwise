@@ -59,6 +59,7 @@ export function mergeS(local: Partial<AppState> | null, cloud: Partial<AppState>
     'email',
     'theme',
     'hide',
+    'hh',
     'chan',
     'mailOn',
     'lastRep',

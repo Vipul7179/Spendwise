@@ -1,87 +1,36 @@
-'use client';
+﻿'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import AuthPromoArtwork from './AuthPromoArtwork';
+import AuthPromoIcon from './AuthPromoIcon';
 
-const WORDS = ['your spending', 'your budgets', 'your savings', 'shared bills'];
+const FEATURES = [
+  ['↗', 'Track Expenses', 'Know where your money goes', 'tracking'],
+  ['◎', 'Set Budgets', 'Stay on track with your goals', 'budgets'],
+  ['♜', 'Reach Goals', 'Turn your dreams into plans', 'goals'],
+  ['♧', 'Split Bills', 'Manage shared expenses easily', 'split'],
+] as const;
 
 export default function AuthSidebar() {
-  const [wordIndex, setWordIndex] = useState(0);
-  const [isOut, setIsOut] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsOut(true);
-      setTimeout(() => {
-        setWordIndex((prev) => (prev + 1) % WORDS.length);
-        setIsOut(false);
-      }, 300);
-    }, 2400);
-
-    return () => clearInterval(interval);
-  }, []);
-
+  const isSignup = usePathname() === '/signup';
   return (
-    <aside className="ah">
-      <i className="bl b1" />
-      <i className="bl b2" />
-      <i className="bl b3" />
+    <aside className="ah auth-promo">
       <div className="atop">
-        <Link className="abrand" href="/" aria-label="Hisbo home">
-          <span className="tlogo">
-            <Image
-              src="/logo-mark.webp"
-              alt="Hisbo"
-              width={32}
-              height={32}
-              className="lgi"
-            />
-          </span>
-          Hisbo
-        </Link>
-        <Link className="bkb" href="/">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Back
-        </Link>
+        <Link className="abrand" href="/" aria-label="Hisbo home"><span className="tlogo"><Image src="/logo-mark.webp" alt="Hisbo" width={40} height={40} className="lgi" priority /></span>Hisbo</Link>
+        <Link className="bkb" href="/"><span aria-hidden="true">←</span> Back</Link>
       </div>
-
-      <h1 className="ht">
-        Take control of <span id="rot" className={isOut ? 'out' : ''}>{WORDS[wordIndex]}</span>
-      </h1>
-      <p className="hp2">
-        Track expenses, set smart budgets, reach savings goals and split bills with friends.
-      </p>
-
-      <div className="fcs" aria-hidden="true">
-        <div className="fc f1">
-          <span className="m2">Groceries</span>
-          <b>&minus;₹850</b>
+      <div className="auth-promo-content">
+        <div className="auth-promo-copy">
+          <span className="companion-badge">✦ Your Personal Finance Companion</span>
+          <h1 className="ht">{isSignup ? 'Build a better' : 'Welcome back'}<span>{isSignup ? 'money future' : 'to a better you'}</span></h1>
+          <p className="hp2">{isSignup ? 'Track expenses, set smart budgets, reach savings goals and split bills with friends.' : 'Log in to sync your expenses, budgets and savings across all your devices.'}</p>
+          <div className="auth-features">{FEATURES.map(([, title, text, tone]) => <div className={`auth-feature ${tone}`} key={title}><span className="feature-symbol" aria-hidden="true"><AuthPromoIcon name={tone} /></span><div><strong>{title}</strong><small>{text}</small></div></div>)}</div>
         </div>
-        <div className="fc f2">
-          <span className="m2">Food budget &middot; 62% used</span>
-          <div className="mb">
-            <i />
-          </div>
-        </div>
-        <div className="fc f3">
-          <span className="m2">Goal reached</span>
-          <b>New phone &#127881;</b>
-        </div>
+        <AuthPromoArtwork />
       </div>
+      <div className="auth-benefits"><div><span aria-hidden="true"><AuthPromoIcon name="tracking" /></span><p><strong>Smart Tracking</strong><small>Every moment matters</small></p></div><div><span aria-hidden="true"><AuthPromoIcon name="privacy" /></span><p><strong>Privacy First</strong><small>You’re in control</small></p></div><div><span aria-hidden="true"><AuthPromoIcon name="free" /></span><p><strong>Free to Use</strong><small>Start in seconds</small></p></div></div>
     </aside>
   );
 }
-

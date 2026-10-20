@@ -8,7 +8,7 @@ async function verifyAuthParity() {
   const checks = [
     { name: 'Outer auth wrapper class', check: (h) => h.includes('class="auth"') },
     { name: 'Auth split wrapper .aw', check: (h) => h.includes('class="aw"') },
-    { name: 'Auth sidebar .ah', check: (h) => h.includes('class="ah"') },
+    { name: 'Auth sidebar .ah', check: (h) => /class="[^"]*\bah\b[^"]*"/.test(h) },
     { name: 'Auth panel .ap', check: (h) => h.includes('class="ap"') },
     { name: 'Auth card container .ab', check: (h) => h.includes('class="ab"') },
     { name: 'Auth tabs indicator .ind', check: (h) => h.includes('class="ind"') },

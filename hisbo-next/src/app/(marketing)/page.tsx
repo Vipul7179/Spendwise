@@ -1,11 +1,16 @@
 import type { Metadata } from 'next';
+import './landing-reference.css';
 import Link from 'next/link';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import InteractivePreview from '@/components/marketing/InteractivePreview';
+import GuestEntryButton from '@/components/auth/GuestEntryButton';
 import BlogCard from '@/components/blog/BlogCard';
 import BlogEmptyState from '@/components/blog/BlogEmptyState';
-import { getPublishedBlogPosts, getBlogCategories } from '@/lib/blog';
+import { getPublishedBlogPosts, getBlogCategoriesResult } from '@/lib/blog';
+
+// Fetch the journal at request time so a build-time outage is never baked into home.
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Hisbo — Track spending, stay on budget, save more',
@@ -152,14 +157,19 @@ const FAQS = [
     a: 'Your data is stored in your own account over encrypted connections, and each user can only read their own data. It is never sold. You can also hide every amount on screen with one tap. The Terms and Privacy Policy explain the details.',
   },
   {
+    q: 'Can I get a monthly report?',
+    a: 'Yes. Save your email in the Alerts tab and Hisbo reminds you at the end of the month to send yourself a summary of your spending, budgets and savings.',
+  },
+  {
     q: 'Does it work on my phone?',
     a: 'Yes. Hisbo works in your browser on phones and computers, in light or dark mode.',
   },
 ];
 
 export default async function LandingPage() {
-  const { posts } = await getPublishedBlogPosts({ limit: 3 });
-  const categories = await getBlogCategories();
+  const { posts, error: postError } = await getPublishedBlogPosts({ limit: 3 });
+  const { categories, error: categoryError } = await getBlogCategoriesResult();
+  const blogError = postError || categoryError;
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
 
   // JSON-LD structured data for web application and organization
@@ -219,9 +229,9 @@ export default async function LandingPage() {
           <Link className="lbtn p big" href="/signup">
             Sign up free
           </Link>
-          <Link className="lbtn ol big" href="/overview?guest=1">
+          <GuestEntryButton className="lbtn ol big">
             Try without an account
-          </Link>
+          </GuestEntryButton>
         </div>
 
         <div className="ltrust" style={{ justifyContent: 'center' }}>
@@ -315,9 +325,9 @@ export default async function LandingPage() {
               <li className="n">Your data is saved only in this browser on this device</li>
               <li className="n">It will not appear in another browser or on another device</li>
             </ul>
-            <Link className="lbtn ol" href="/overview?guest=1">
+            <GuestEntryButton className="lbtn ol">
               Continue without an account
-            </Link>
+            </GuestEntryButton>
           </div>
 
           <div className="gc hl">
@@ -385,7 +395,9 @@ export default async function LandingPage() {
           )}
         </div>
 
-        {posts.length > 0 ? (
+        {blogError ? (
+          <BlogEmptyState kind={blogError === 'config' ? 'config' : 'error'} compact />
+        ) : posts.length > 0 ? (
           <div className="journal-grid">
             {posts.map((post) => (
               <BlogCard

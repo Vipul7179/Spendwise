@@ -1,55 +1,39 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
+function subscribeToGuest(callback: () => void) {
+  window.addEventListener('storage', callback);
+  return () => window.removeEventListener('storage', callback);
+}
+function guestSnapshot() {
+  try { return localStorage.getItem('sw_guest'); } catch { return null; }
+}
+
 export default function Navbar() {
   const pathname = usePathname();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
+  const [sessionUser, setSessionUser] = useState(false);
+  const isGuest = useSyncExternalStore(subscribeToGuest, guestSnapshot, () => null) === '1';
+  const isAuthenticated = sessionUser || isGuest;
 
   useEffect(() => {
-    let isMounted = true;
-
-    // Fast check via localStorage
-    try {
-      const isGuest = localStorage.getItem('sw_guest') === '1';
-      const hasSess = !!localStorage.getItem('sw_sess');
-      const rawState = localStorage.getItem('spendwise_v1');
-      if (rawState) {
-        try {
-          const parsed = JSON.parse(rawState);
-          if (parsed?.name) setUserName(parsed.name);
-        } catch {}
-      }
-      if (isGuest || hasSess) {
-        setIsAuthenticated(true);
-      }
-    } catch {}
-
-    // Verify Supabase session asynchronously
+    let active = true;
+    let unsubscribe = () => {};
     try {
       const supabase = createClient();
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!isMounted) return;
-        if (session?.user) {
-          setIsAuthenticated(true);
-        } else {
-          // If not in guest mode either, then unauthenticated
-          const isGuest = typeof window !== 'undefined' && localStorage.getItem('sw_guest') === '1';
-          setIsAuthenticated(isGuest);
-        }
+      void supabase.auth.getSession().then(({ data: { session } }) => {
+        if (active) setSessionUser(!!session?.user);
+      }).catch(() => { /* Guest access remains available if auth is offline. */ });
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (active) setSessionUser(!!session?.user);
       });
-    } catch {
-      // Fallback
-    }
-
-    return () => {
-      isMounted = false;
-    };
+      unsubscribe = () => subscription.unsubscribe();
+    } catch { /* Render the public navigation if auth is not configured. */ }
+    return () => { active = false; unsubscribe(); };
   }, []);
 
   const isBlogActive = pathname.startsWith('/blog');
@@ -86,7 +70,7 @@ export default function Navbar() {
           Blog
         </Link>
 
-        {isAuthenticated ? (
+        {sessionUser ? (
           <Link
             className="lbtn p"
             href="/overview"

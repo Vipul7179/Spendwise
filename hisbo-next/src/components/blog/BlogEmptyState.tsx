@@ -1,8 +1,10 @@
 import React from 'react';
+import BlogRetryButton from './BlogRetryButton';
 
 interface BlogEmptyStateProps {
   kind?: 'empty' | 'config' | 'error';
   compact?: boolean;
+  retry?: boolean;
 }
 
 export function BlogEmptyIllustration() {
@@ -24,7 +26,7 @@ export function BlogEmptyIllustration() {
   );
 }
 
-export default function BlogEmptyState({ kind = 'empty', compact = false }: BlogEmptyStateProps) {
+export default function BlogEmptyState({ kind = 'empty', compact = false, retry = true }: BlogEmptyStateProps) {
   const copy = {
     empty: {
       heading: 'A little knowledge. A better financial future.',
@@ -54,6 +56,7 @@ export default function BlogEmptyState({ kind = 'empty', compact = false }: Blog
       </span>
       <TitleTag>{copy.heading}</TitleTag>
       <p>{copy.description}</p>
+      {kind === 'error' && retry && <BlogRetryButton />}
     </div>
   );
 }

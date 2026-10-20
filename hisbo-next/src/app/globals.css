@@ -4,6 +4,7 @@
    ==================================================================== */
 
 :root {
+  color-scheme: light;
   --bg: #f2f8f4;
   --card: #fff;
   --ink: #0d2a21;
@@ -26,6 +27,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --bg: #06140f;
     --card: #0e2219;
     --ink: #e6f4ec;
@@ -46,6 +48,7 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #06140f;
   --card: #0e2219;
   --ink: #e6f4ec;
@@ -159,10 +162,38 @@ a {
 
 .card {
   background: var(--card);
-  border-radius: 18px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 18px;
   border: 1px solid var(--line);
-  box-shadow: 0 1px 3px rgba(6, 40, 30, 0.05);
+  box-shadow: 0 1px 2px rgba(6, 40, 30, 0.05), 0 8px 24px -12px rgba(6, 40, 30, 0.12);
+}
+
+.grid {
+  display: grid;
+  gap: 14px;
+}
+
+h2 {
+  font-size: 1.05rem;
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.mut {
+  color: var(--mut);
+  font-size: 0.85rem;
+}
+
+/* Shared legacy form/action row. Keep wrapping at narrow widths. */
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.row > .b {
+  flex: 1 1 auto;
 }
 
 /* ====================================================================
@@ -193,6 +224,7 @@ textarea {
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
@@ -1116,9 +1148,6 @@ input[type="checkbox"] {
    Blog Shell, Directory & Article Styles
    ==================================================================== */
 .blog-shell {
-  max-width: 1060px;
-  margin: 0 auto;
-  padding: 24px 16px 56px;
   display: grid;
   gap: 16px;
 }
@@ -1147,8 +1176,8 @@ input[type="checkbox"] {
   padding: 10px 14px;
   border-radius: 12px;
   border: 1px solid var(--line);
-  background: var(--card);
-  color: var(--ink);
+  background-color: var(--input-bg);
+  color: var(--input-text);
   outline: none;
   width: 100%;
   box-sizing: border-box;
@@ -1161,8 +1190,8 @@ input[type="checkbox"] {
 
 .blog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 14px;
 }
 
 .blog-card {
@@ -1628,16 +1657,16 @@ input[type="checkbox"] {
     margin: 0;
     animation: bob 6s ease-in-out infinite;
   }
-  .fcl.a {
+  .fcl.preview-payment {
     left: -14px;
     bottom: -26px;
   }
-  .fcl.b {
+  .fcl.preview-budget {
     right: -10px;
     top: 110px;
     animation-delay: -2s;
   }
-  .fcl.c {
+  .fcl.preview-goal {
     right: 40px;
     bottom: -32px;
     animation-delay: -4s;
@@ -2475,6 +2504,111 @@ nav#nav {
   }
 }
 
+/* Private app shell dimensions. Public/auth pages keep their own scale. */
+.app-private {
+  max-width: 1100px;
+  padding: 14.4px 14.4px 96px;
+  font-size: 16px;
+}
+.app-private .card { padding: 17.6px; border-radius: 16px; }
+.app-private .grid { gap: 14.4px; }
+.app-private h2 { font-size: 1.05em; margin-bottom: 12px; }
+.app-private .mut { font-size: .85em; }
+.app-private .tb { padding: 8px 0 14.4px; margin-bottom: 16px; }
+.app-private .tbrand { font-size: 1.15em; }
+.app-private .tbrand .tlogo { width: 32px; height: 32px; }
+.app-private .tr { gap: 9.6px; }
+.app-private .tools { gap: 1.6px; padding: 4px; }
+.app-private .tools .ib { width: 33.6px; height: 33.6px; color: var(--mut); }
+.app-private .tools .ib svg { width: 20px; height: 20px; }
+.app-private .avt { width: 41.6px; height: 41.6px; font-size: 1.05em; }
+.app-private .gr { margin-bottom: 14.4px; }
+.app-private .gr .mut { font-size: 1em; }
+.app-private .gr h1 { font-size: 1.9em; }
+.app-private .ft { margin-top: 22.4px; }
+.app-private .sup .b { padding: 11.2px 17.6px; border-radius: 12px; }
+.app-private .cred { font-size: .88em; padding-top: 17.6px; }
+.app-private .soc { gap: 9.6px; margin-block: 12px; }
+.app-private .soc a { font-size: .85em; padding: 8px 14.4px; }
+
+/* Overview controls use the pale surface shown in the app reference. */
+.overview-page { --input-bg: var(--bg); }
+.overview-page .hero { padding: 21.6px; border-radius: 22.4px; margin-bottom: 14.4px; }
+.overview-page .hero .hi, .overview-page .hd { font-size: .9em; }
+.overview-page .hero .big { font-size: clamp(35.2px, 8vw, 54.4px); margin: 4px 0 12px; }
+.overview-page .hd { margin-bottom: 16px; }
+.overview-page .heye { width: 36px; height: 36px; top: 14.4px; right: 14.4px; }
+.overview-page .heye svg { width: 18.4px; height: 18.4px; }
+.overview-page .tiles { gap: 9.6px; }
+.overview-page .tile { padding: 14.4px 16px; border-radius: 18.4px; gap: 4px; }
+.overview-page .tile span { font-size: .82em; }
+.overview-page .tile b { font-size: 1.3em; }
+.overview-page .tile small { font-size: .76em; }
+.overview-page .hp { height: 8px; margin-top: 16px; }
+.overview-page .edit { background: rgba(255,255,255,.18); border: 0; color: #fff; border-radius: 79.2px; padding: 3.2px 9.6px; font: inherit; font-size: .75em; cursor: pointer; }
+.overview-page .hi .edit { opacity: 0; transition: opacity .15s; }
+.overview-page .hero:hover .edit, .overview-page .edit:focus-visible { opacity: 1; }
+.overview-page .dbar { padding: 12px 14.4px; border-radius: 16px; margin: 14.4px 0; gap: 12px 17.6px; }
+.overview-page .mt b { font-size: 1.05em; }
+.overview-page .mnav { gap: 12px; }
+.overview-page .nb { width: 36px; height: 36px; font-size: 1.3em; }
+.overview-page .dpk { gap: 9.6px; }
+.overview-page .dpk label { font-size: .72em; }
+.overview-page input, .overview-page select { font-size: .95em !important; padding: 11.2px 13.6px !important; border-radius: 12px !important; }
+.overview-page select { padding-right: 33.6px !important; }
+.overview-page .dpk input { padding: 8px 9.6px !important; font-size: 1.22em !important; }
+.overview-page .row { gap: 8px; }
+.overview-page .expense-form .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.overview-page .expense-form .row > input, .overview-page .expense-form .row > select { width: 100%; }
+.overview-page .expense-form .b { grid-column: 1 / -1; }
+.overview-page .b { padding: 11.2px 17.6px; border-radius: 12px; }
+.overview-page .seg3 { padding: 4px; margin-bottom: 14.4px; border-radius: 12px; }
+.overview-page .seg3 button { padding: 7.2px 4px; font-size: .82em; border-radius: 8.8px; }
+.overview-page .donut { width: min(100%, 249.6px); }
+.overview-page .ctr b { font-size: 1.5em; }
+.overview-page .bar { height: 9.6px; margin: 6.4px 0 2.4px; }
+.overview-page .empty { padding: 14.4px 0; }
+.overview-page .srt { flex: none; width: auto; min-width: 112px; padding: 8px 33.6px 8px 12px !important; font-size: .85em !important; }
+@media (min-width: 860px) {
+  .app-private { grid-template-columns: 200px minmax(0, 1fr); gap: 28px; padding: 28px 20px; }
+  .app-private .side .brand { flex-direction: column; align-items: flex-start; gap: 0; font-size: 1.4em; margin-bottom: 18.4px; }
+  .app-private .side .brand .tlogo { width: 36px !important; height: 36px !important; margin-right: 0 !important; }
+  .app-private #nav { gap: 4px; }
+  .app-private #nav a { padding: 11.2px 14.4px !important; gap: 9.6px !important; font-size: .95em !important; border-radius: 12px !important; }
+  .app-private #nav svg { width: 20px; height: 20px; }
+  .overview-page .two { gap: 14.4px; }
+}
+@media (max-width: 859px) {
+  .app-private { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  .app-private .tb { padding-top: 8px; }
+  .app-private .menu-toggle { color: var(--mut); }
+  .app-private .mobile-nav { padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); }
+  .app-private .mobile-nav-item { min-height: 52px; font-size: .68em; }
+  .app-private .mobile-nav-item svg { width: 20.8px; height: 20.8px; }
+  .app-private .mobile-drawer { width: min(88vw, 390.4px); padding: calc(16px + env(safe-area-inset-top, 0px)) 17.6px 22.4px; gap: 16px; }
+  .app-private .drawer-title { font-size: 1.05em; }
+  .app-private .drawer-title .tlogo { width: 33.6px; height: 33.6px; }
+  .app-private .drawer-profile { grid-template-columns: 44px minmax(0, 1fr); gap: 9.6px 12px; padding: 14.4px 0; }
+  .app-private .drawer-avatar { width: 44px; height: 44px; font-size: 1.05em; }
+  .app-private .drawer-user span { font-size: .78em; }
+  .app-private .drawer-actions { gap: 8px; }
+  .app-private .drawer-action { min-height: 44px; padding: 8.8px 9.6px; gap: 8px; border-radius: 12px; font-size: .8em; }
+  .app-private .drawer-action svg { width: 18.4px; height: 18.4px; }
+  .app-private .drawer-section-title { font-size: .72em; }
+  .app-private .drawer-link { min-height: 48px; padding: 8.8px 12px; gap: 12px; }
+  .app-private .drawer-link svg { width: 20.8px; height: 20.8px; }
+  .overview-page .hero .big { font-size: clamp(35.2px, 8vw, 54.4px); }
+  .overview-page .dpk input { min-height: 43.2px; }
+  .overview-page .donut { margin-block: 24px; }
+}
+@media (max-width: 380px) {
+  .app-private .tools .ib { width: 25.6px; height: 28.8px; }
+  .app-private .tr { gap: 3.2px; }
+  .app-private .tbrand { gap: 4.8px; }
+  .app-private .drawer-actions { grid-template-columns: minmax(0, 1fr); }
+  .overview-page .srt { min-width: 88px; }
+}
+
 /* TopBar */
 .tb {
   display: flex;
@@ -3120,6 +3254,7 @@ nav#nav {
   display: grid;
   place-items: center;
   padding: 16px;
+  overflow-y: auto;
   animation: fade 0.2s;
 }
 .box {
@@ -3127,6 +3262,10 @@ nav#nav {
   border-radius: 20px;
   padding: 22px;
   width: min(100%, 420px);
+  min-width: 0;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
   animation: pop2 0.3s cubic-bezier(0.2, 1.2, 0.4, 1);
   box-shadow: 0 20px 50px -15px rgba(6, 40, 30, 0.5);
 }
@@ -3158,46 +3297,82 @@ nav#nav {
   margin: 0 0 8px;
   max-width: 32ch;
 }
+.gl {
+  text-align: left;
+  margin: 4px 0 10px;
+  padding-left: 18px;
+  color: var(--mut);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  width: 100%;
+}
+.gl li {
+  margin: 3px 0;
+}
 .nm input {
   width: 100%;
   text-align: center;
   font-size: 1.05rem;
   flex: none;
 }
-/* Modals action rows and standardized buttons */
-.box .row > .b,
-.box .row > .g {
-  flex: 1 1 0;
+/* All popup actions share geometry; their existing classes retain action colors. */
+.box :is(.b, .g) {
+  min-width: 0;
   min-height: 44px;
-  padding: 11px 16px;
+  padding: 10px 16px;
+  font: inherit;
   font-size: 0.95rem;
   font-weight: 600;
+  line-height: 1.4;
+  border: 1px solid transparent;
   border-radius: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   text-align: center;
-  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
-
-.nm .b,
-.nm .g,
-.nm a.g,
-.nm a.b {
+.box .g {
+  border-color: var(--line);
+}
+.box :is(.b, .g):focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+.box :is(.b, .g):disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.box .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.box .row > :is(.b, .g) {
+  flex: 1 1 130px;
+}
+.box .nm > :is(.b, .g),
+.box .nm form > :is(.b, .g) {
   width: 100%;
-  min-height: 44px;
-  padding: 12px 16px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  box-sizing: border-box;
   margin-top: 8px;
   flex: none;
 }
+.box .nm > *,
+.box .nm form {
+  max-width: 100%;
+  min-width: 0;
+}
+.box .upirow .g {
+  width: auto;
+  margin: 0;
+  flex: none;
+}
+.box .upirow code {
+  min-width: 0;
+}
+
 .av {
   width: 76px;
   height: 76px;
@@ -3525,8 +3700,6 @@ a.bn:focus-visible {
 /* Admin Banner Styles */
 .box:has(.adm) {
   width: min(100%, 640px);
-  max-height: 90vh;
-  overflow: auto;
 }
 .nm.adm {
   align-items: stretch;
@@ -3620,3 +3793,20 @@ a.bn:focus-visible {
 
 
 
+/* Overview rows must allow long merchant names to shrink independently of actions. */
+.overview-page .expense-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; }
+.overview-page .expense-identity { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; min-width: 0; }
+.overview-page .expense-description { min-width: 0; overflow-wrap: anywhere; }
+.overview-page .expense-description .tag { max-width: 100%; white-space: normal; }
+.overview-page .expense-actions { display: flex; gap: 12px; align-items: center; flex: none; }
+.overview-page .expense-actions .g { flex: none; white-space: nowrap; }
+.expense-delete-dialog .av.bad { background: #ff7a6b; box-shadow: 0 10px 24px #ff7a6b40; }
+.expense-delete-dialog .b.dng { background: #ff7a6b !important; color: #fff !important; }
+.expense-delete-dialog .b.dng:hover { background: #f26e60 !important; }
+.app-splash { position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; background: linear-gradient(125deg,#06382a,#0f7a58); color: #fff; opacity: 1; transition: opacity 220ms ease; }
+.app-splash > div { text-align: center; }
+.app-splash img { display: block; margin: auto; border-radius: 32px; }
+.app-splash p { font-size: 20px; color: #bfdfd4; margin: 20px 0 0; }
+.app-splash-exit { opacity: 0; pointer-events: none; }
+@media (max-width: 420px) { .overview-page .expense-actions { flex-direction: column; align-items: flex-end; gap: 6px; }.overview-page .expense-row { gap: 10px; } }
+@media (prefers-reduced-motion: reduce) { .app-splash { transition: none; } }

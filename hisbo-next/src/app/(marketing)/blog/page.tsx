@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Navbar from '@/components/marketing/Navbar';
-import Footer from '@/components/marketing/Footer';
-import BlogCard from '@/components/blog/BlogCard';
+import BlogPostList from '@/components/blog/BlogPostList';
 import BlogEmptyState from '@/components/blog/BlogEmptyState';
 import BlogToolbar from '@/components/blog/BlogToolbar';
-import { getPublishedBlogPosts, getBlogCategories } from '@/lib/blog';
+import { BLOG_PAGE_SIZE, getPublishedBlogPosts, getBlogCategoriesResult } from '@/lib/blog';
 
 export const metadata: Metadata = {
   title: 'Hisbo Journal — Guides & Tips for Your Money Life',
@@ -42,53 +40,49 @@ export default async function BlogIndexPage({ searchParams }: BlogPageProps) {
   const currentCategory = resolvedParams.category || 'all';
   const currentSearch = resolvedParams.q || '';
 
-  const [categories, { posts }] = await Promise.all([
-    getBlogCategories(),
+  const [{ categories, error: categoryError }, { posts, total, error: postError }] = await Promise.all([
+    getBlogCategoriesResult(),
     getPublishedBlogPosts({
+      limit: BLOG_PAGE_SIZE,
       categoryId: currentCategory !== 'all' ? currentCategory : undefined,
       search: currentSearch || undefined,
     }),
   ]);
 
-  const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
+  const error = postError || categoryError;
   const hasFilter = currentSearch.trim() !== '' || currentCategory !== 'all';
 
   return (
-    <div className="lp">
-      <Navbar />
+    <section className="blog-shell">
+      <BlogToolbar
+        categories={categories}
+        currentCategory={currentCategory}
+        currentSearch={currentSearch}
+      />
 
-      <main className="blog-shell">
-        <BlogToolbar
+      {error ? (
+        <BlogEmptyState kind={error === 'config' ? 'config' : 'error'} />
+      ) : posts.length > 0 ? (
+        <BlogPostList
+          key={JSON.stringify([currentCategory, currentSearch, posts.map(post => [post.id, post.updated_at])])}
+          initialPosts={posts}
+          total={total}
           categories={categories}
-          currentCategory={currentCategory}
-          currentSearch={currentSearch}
+          categoryId={currentCategory !== 'all' ? currentCategory : undefined}
+          search={currentSearch || undefined}
         />
-
-        {posts.length > 0 ? (
-          <div className="blog-grid">
-            {posts.map((post) => (
-              <BlogCard
-                key={post.id}
-                post={post}
-                category={categoryMap[post.category_id || '']}
-              />
-            ))}
+      ) : hasFilter ? (
+        <div className="blog-empty">
+          No articles match those filters. Try another keyword or select &ldquo;All categories&rdquo;.
+          <div style={{ marginTop: '12px' }}>
+            <Link href="/blog" className="g">
+              Reset filters
+            </Link>
           </div>
-        ) : hasFilter ? (
-          <div className="blog-empty">
-            No articles match those filters. Try another keyword or select &ldquo;All categories&rdquo;.
-            <div style={{ marginTop: '12px' }}>
-              <Link href="/blog" className="g">
-                Reset filters
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <BlogEmptyState kind="empty" />
-        )}
-      </main>
-
-      <Footer />
-    </div>
+        </div>
+      ) : (
+        <BlogEmptyState kind="empty" />
+      )}
+    </section>
   );
 }

@@ -19,7 +19,12 @@ export default function BlogToolbar({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [searchValue, setSearchValue] = useState(currentSearch);
+  const [draft, setDraft] = useState({ source: currentSearch, value: currentSearch });
+  // Reconcile URL history before rendering children, without remounting the
+  // focused search input on every live-search navigation.
+  if (draft.source !== currentSearch) setDraft({ source: currentSearch, value: currentSearch });
+  const searchValue = draft.source === currentSearch ? draft.value : currentSearch;
+  const setSearchValue = (value: string) => setDraft({ source: currentSearch, value });
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +35,7 @@ export default function BlogToolbar({
     updateFilters(catId, searchValue);
   };
 
-  const updateFilters = (cat: string, query: string) => {
+  const updateFilters = (cat: string, query: string, replace = false) => {
     const params = new URLSearchParams(searchParams ? searchParams.toString() : '');
     if (cat && cat !== 'all') {
       params.set('category', cat);
@@ -46,7 +51,8 @@ export default function BlogToolbar({
 
     startTransition(() => {
       const url = params.toString() ? `/blog?${params.toString()}` : '/blog';
-      router.push(url);
+      if (replace) router.replace(url, { scroll: false });
+      else router.push(url, { scroll: false });
     });
   };
 
@@ -54,7 +60,7 @@ export default function BlogToolbar({
     <div className="blog-toolbar">
       <div className="row">
         <Link className="g" href="/blog">
-          All articles
+          Blog
         </Link>
       </div>
 
@@ -65,7 +71,10 @@ export default function BlogToolbar({
             aria-label="Search blog posts"
             placeholder="Search articles…"
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              updateFilters(currentCategory, e.target.value, true);
+            }}
           />
         </form>
       </div>

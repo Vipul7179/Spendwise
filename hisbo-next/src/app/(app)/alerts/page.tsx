@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { fmt, fmtR, NOW, mk, mTotal, spent } from '@/lib/state/calculations';
+import { fmt, fmtR, NOW, mk, mTotal, spent, maskAmounts } from '@/lib/state/calculations';
 import { formatMonthLabel } from '@/components/app/overview/DateBar';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 
 export default function AlertsPage() {
   const {
@@ -23,19 +24,22 @@ export default function AlertsPage() {
   const [channel, setChannel] = useState<'wa' | 'sms'>(state.chan || 'wa');
   const [phoneInput, setPhoneInput] = useState(state.phone || '');
   const [isEditingPhone, setIsEditingPhone] = useState(!state.phone);
+  const [confirmDeletePhone, setConfirmDeletePhone] = useState(false);
 
   // Mark alerts as read on visit
   useEffect(() => {
     markAlertsAsRead();
   }, [markAlertsAsRead]);
 
-  // Sync state if it updates externally
-  useEffect(() => {
-    if (state.email) setEmailInput(state.email);
-    if (state.phone) setPhoneInput(state.phone);
-    if (state.chan) setChannel(state.chan);
-    if (state.mailOn !== undefined) setMailOn(state.mailOn);
-  }, [state.email, state.phone, state.chan, state.mailOn]);
+  const settingsKey = JSON.stringify([state.email, state.phone, state.chan, state.mailOn]);
+  const [renderedSettings, setRenderedSettings] = useState(settingsKey);
+  if (renderedSettings !== settingsKey) {
+    setRenderedSettings(settingsKey);
+    setEmailInput(state.email || '');
+    setPhoneInput(state.phone || '');
+    setChannel(state.chan || 'wa');
+    setMailOn(state.mailOn !== false);
+  }
 
   const handleSaveEmail = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -68,12 +72,7 @@ export default function AlertsPage() {
   };
 
   const handleDeletePhone = () => {
-    if (window.confirm('Delete this phone number?')) {
-      updatePhoneSettings('', channel);
-      setPhoneInput('');
-      setIsEditingPhone(true);
-      showToast('Phone number deleted.');
-    }
+    setConfirmDeletePhone(true);
   };
 
   // Generate monthly report text
@@ -160,10 +159,6 @@ export default function AlertsPage() {
     return state.chan === 'wa'
       ? `https://wa.me/${digits}?text=${encodeURIComponent(msg)}`
       : `sms:+${digits}?body=${encodeURIComponent(msg)}`;
-  };
-
-  const maskAmount = (text: string) => {
-    return text.replace(/₹\s?[\d,]+(\.\d+)?/g, '₹ ••••');
   };
 
   return (
@@ -318,7 +313,7 @@ export default function AlertsPage() {
         {state.alerts.length ? (
           state.alerts.map((a) => {
             const sendUrl = getAlertSendLink(a.msg);
-            const displayMsg = state.hide ? maskAmount(a.msg) : a.msg;
+            const displayMsg = state.hide ? maskAmounts(a.msg) : a.msg;
 
             return (
               <div key={a.id} className="li">
@@ -361,6 +356,20 @@ export default function AlertsPage() {
           </div>
         )}
       </div>
+      {confirmDeletePhone && (
+        <ConfirmDialog
+          title="Delete this phone number?"
+          confirmLabel="Delete"
+          onCancel={() => setConfirmDeletePhone(false)}
+          onConfirm={() => {
+            updatePhoneSettings('', channel);
+            setPhoneInput('');
+            setIsEditingPhone(true);
+            setConfirmDeletePhone(false);
+            showToast('Phone number deleted.');
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthTabs from '@/components/auth/AuthTabs';
+import GuestEntryButton from '@/components/auth/GuestEntryButton';
 import { createClient } from '@/lib/supabase/client';
 import { getFriendlyAuthErrorMessage, calculatePasswordStrength } from '@/lib/auth-helpers';
 
@@ -100,10 +101,6 @@ export default function SignUpPage() {
     }
   };
 
-  const handleGuestContinue = () => {
-    localStorage.setItem('sw_guest', '1');
-    router.push('/overview');
-  };
 
   return (
     <>
@@ -274,6 +271,11 @@ export default function SignUpPage() {
               <span>{pwdStrength.label}</span>
             </div>
 
+            <ul className="password-hints">
+              <li>At least 8 characters</li>
+              <li>Tip: combine letters and numbers</li>
+              <li>A strong password helps keep your account safe</li>
+            </ul>
             <label className="chk">
               <input
                 type="checkbox"
@@ -302,22 +304,17 @@ export default function SignUpPage() {
                   Creating account...
                 </>
               ) : (
-                'Create account'
+                <>Create account <span aria-hidden="true" style={{ marginLeft: 8 }}>&rarr;</span></>
               )}
             </button>
           </form>
         )}
 
         <div style={{ textAlign: 'center', marginTop: '10px' }}>
-          <button
-            type="button"
-            className="lk"
-            onClick={handleGuestContinue}
-            style={{ fontWeight: 600 }}
-          >
-            Continue without an account
-          </button>
+          <GuestEntryButton className="lk">Continue without an account</GuestEntryButton>
         </div>
+
+        <p className="auth-switch">Already have an account? <Link href="/login">Log in</Link></p>
 
         <div className="trust" style={{ marginTop: '12px' }}>
           Guest data stays only on this device

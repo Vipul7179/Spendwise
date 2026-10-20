@@ -1,0 +1,222 @@
+{
+  "light": [
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 320,
+      "theme": "light",
+      "width": 320
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 305,
+      "theme": "light",
+      "width": 320
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 375,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 360,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 390,
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 375,
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 768,
+      "theme": "light",
+      "width": 768
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 753,
+      "theme": "light",
+      "width": 768
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 1024,
+      "theme": "light",
+      "width": 1024
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 1024,
+      "theme": "light",
+      "width": 1024
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 1440,
+      "theme": "light",
+      "width": 1440
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 1440,
+      "theme": "light",
+      "width": 1440
+    }
+  ],
+  "dark": [
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 320,
+      "theme": "dark",
+      "width": 320
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 305,
+      "theme": "dark",
+      "width": 320
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 360,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 390,
+      "theme": "dark",
+      "width": 390
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 375,
+      "theme": "dark",
+      "width": 390
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 768,
+      "theme": "dark",
+      "width": 768
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 753,
+      "theme": "dark",
+      "width": 768
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 1024,
+      "theme": "dark",
+      "width": 1024
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 1024,
+      "theme": "dark",
+      "width": 1024
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/login",
+      "scroll": 1440,
+      "theme": "dark",
+      "width": 1440
+    },
+    {
+      "artLoaded": true,
+      "currency": false,
+      "formFits": true,
+      "route": "/signup",
+      "scroll": 1440,
+      "theme": "dark",
+      "width": 1440
+    }
+  ]
+}

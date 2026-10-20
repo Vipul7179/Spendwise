@@ -1,7 +1,11 @@
 import { AppState, Category, Expense, Group, GroupExpense, AlertItem, RecurringExpense } from '@/types/state';
 
-export const MASK_DOTS = '••••';
-export const MASK_AMOUNT = '₹ ••••';
+export const MASK_DOTS = '\u25cf\u202f\u25cf\u202f\u25cf\u202f\u25cf';
+export const MASK_AMOUNT = '\u20b9\u00a0' + MASK_DOTS;
+
+export function maskAmounts(text: string): string {
+  return text.replace(/₹\s?[\d,]+(\.\d+)?/g, MASK_AMOUNT);
+}
 
 export function uid(): string {
   return Math.random().toString(36).slice(2, 9);
@@ -198,7 +202,6 @@ export function runRecurringExpenses(
         amt: r.amt,
         cat: r.cat,
         note: `${r.name} (auto)`,
-        nt: true,
       });
       updatedRecurring.push({ ...r, last: m });
     } else {

@@ -19,6 +19,7 @@ const ROUTE_HASH_MAP: Record<string, string> = {
   alerts: '/alerts',
   alr: '/alerts',
   blog: '/blog',
+  'blog/': '/blog',
   journal: '/blog',
   login: '/login',
   signup: '/signup',
@@ -40,9 +41,9 @@ export default function LegacyHashHandler() {
       const slug = clean.slice(5).trim();
       if (slug) {
         try {
-          router.replace(`/blog/${decodeURIComponent(slug)}`);
+          router.replace(`/blog/${encodeURIComponent(decodeURIComponent(slug))}`);
         } catch {
-          router.replace(`/blog/${slug}`);
+          router.replace(`/blog/${encodeURIComponent(slug)}`);
         }
         return;
       }

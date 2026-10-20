@@ -1,7 +1,8 @@
 import fs from 'fs';
 
 async function test() {
-  console.log('Testing Input & Form Styling on http://localhost:3000 ...\n');
+  const origin = `http://localhost:${process.env.PORT || 3000}`;
+  console.log(`Testing Input & Form Styling on ${origin} ...\n`);
 
   // 1. Verify globals.css rules
   const css = fs.readFileSync('./src/app/globals.css', 'utf-8');
@@ -31,18 +32,17 @@ async function test() {
     { url: '/signup', expected: ['id="signup-name"', 'id="signup-email"', 'id="signup-password"', 'class="pws"', 'class="chk"'] },
     { url: '/forgot-password', expected: ['id="reset-email"', 'class="fl"'] },
     { url: '/reset-password', expected: ['id="new-password"', 'class="pws"'] },
-    { url: '/overview', expected: ['class="app"', 'class="hero"', 'class="dbar"'] },
-    { url: '/budgets', expected: ['id="cn"', 'id="cl"', 'Your budgets'] },
-    { url: '/automate', expected: ['id="sms"', 'id="rn"', 'id="ra"', 'id="rc"', 'id="rd"'] },
-    { url: '/savings', expected: ['id="gn"', 'id="gt"', 'Create goal'] },
-    { url: '/groups', expected: ['Groups', 'Add shared expense'] },
-    { url: '/alerts', expected: ['id="em"', 'id="ph"', 'id="chan"'] },
+    // Private forms must not render in anonymous HTTP requests before the client
+    // verifies its existing session or guest flag. Their actions use fixture tests.
+    ...['/overview', '/budgets', '/automate', '/savings', '/groups', '/alerts'].map(url => ({
+      url, expected: ['class="app"', 'aria-label="Checking session"'],
+    })),
   ];
 
   console.log('\nChecking rendered page inputs and shell:\n');
   for (const p of pages) {
     try {
-      const res = await fetch('http://localhost:3000' + p.url);
+      const res = await fetch(origin + p.url);
       const text = await res.text();
       const allFound = p.expected.every(e => text.includes(e));
       if (!allFound) {
