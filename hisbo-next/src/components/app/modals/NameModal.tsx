@@ -84,14 +84,13 @@ export default function NameModal({ first = false }: NameModalProps) {
               }}
               required
             />
-            <button type="submit" className="b" style={{ width: '100%', marginTop: '8px' }}>
+            <button type="submit" className="b">
               {first ? 'Get started' : 'Save changes'}
             </button>
             {!first && (
               <button
                 type="button"
                 className="g"
-                style={{ width: '100%', marginTop: '6px' }}
                 onClick={closeModal}
               >
                 Cancel

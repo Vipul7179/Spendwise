@@ -67,11 +67,11 @@ export default function AccountModal() {
             )}
           </p>
 
-          <button type="button" className="g" style={{ width: '100%' }} onClick={handleEditName}>
+          <button type="button" className="g" onClick={handleEditName}>
             Edit name
           </button>
 
-          <a className="g" href={supHref()} style={{ width: '100%', textAlign: 'center' }}>
+          <a className="g" href={supHref()}>
             Contact support
           </a>
 
@@ -79,7 +79,6 @@ export default function AccountModal() {
             <Link
               href="/admin/banners"
               className="g"
-              style={{ width: '100%', textAlign: 'center' }}
               onClick={closeModal}
             >
               Admin: manage banners
@@ -91,7 +90,6 @@ export default function AccountModal() {
               <button
                 type="button"
                 className="g"
-                style={{ width: '100%' }}
                 onClick={handleSyncNow}
                 disabled={syncStatus === 'syncing'}
               >
@@ -99,8 +97,7 @@ export default function AccountModal() {
               </button>
               <button
                 type="button"
-                className="b"
-                style={{ width: '100%', background: 'var(--bad)', color: '#fff' }}
+                className="b dng"
                 onClick={handleLogout}
               >
                 Sign out
@@ -111,7 +108,6 @@ export default function AccountModal() {
               <Link
                 href="/signup"
                 className="b"
-                style={{ width: '100%', textAlign: 'center' }}
                 onClick={closeModal}
               >
                 Create account to sync
@@ -119,7 +115,6 @@ export default function AccountModal() {
               <Link
                 href="/"
                 className="g"
-                style={{ width: '100%', textAlign: 'center' }}
                 onClick={closeModal}
               >
                 Back to landing page
@@ -130,7 +125,6 @@ export default function AccountModal() {
           <button
             type="button"
             className="g"
-            style={{ width: '100%', marginTop: '6px' }}
             onClick={closeModal}
           >
             Close

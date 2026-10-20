@@ -708,13 +708,12 @@ export default function GroupsPage() {
                   required
                 />
 
-                <button type="submit" className="b" style={{ width: '100%', marginTop: '8px' }}>
+                <button type="submit" className="b">
                   Create group
                 </button>
                 <button
                   type="button"
                   className="g"
-                  style={{ width: '100%', marginTop: '6px' }}
                   onClick={() => setShowNewGroupModal(false)}
                 >
                   Cancel
@@ -752,13 +751,12 @@ export default function GroupsPage() {
                   onChange={(e) => setPhoneInput(e.target.value)}
                   required
                 />
-                <button type="submit" className="b" style={{ width: '100%', marginTop: '8px' }}>
+                <button type="submit" className="b">
                   Save number
                 </button>
                 <button
                   type="button"
                   className="g"
-                  style={{ width: '100%', marginTop: '6px' }}
                   onClick={() => setEditingPhoneMember(null)}
                 >
                   Cancel
@@ -793,7 +791,6 @@ export default function GroupsPage() {
               <button
                 type="button"
                 className="b dng"
-                style={{ width: '100%', background: 'var(--bad)', color: '#fff', marginTop: '8px' }}
                 onClick={() => {
                   deleteGroup(currentGroup.id);
                   setShowDeleteGroupModal(false);
@@ -804,7 +801,6 @@ export default function GroupsPage() {
               <button
                 type="button"
                 className="g"
-                style={{ width: '100%', marginTop: '6px' }}
                 onClick={() => setShowDeleteGroupModal(false)}
               >
                 Cancel
@@ -838,7 +834,6 @@ export default function GroupsPage() {
               <button
                 type="button"
                 className="b dng"
-                style={{ width: '100%', background: 'var(--bad)', color: '#fff', marginTop: '8px' }}
                 onClick={() => {
                   deleteSharedExpense(currentGroup.id, expenseToDelete.id);
                   setExpenseToDelete(null);
@@ -849,7 +844,6 @@ export default function GroupsPage() {
               <button
                 type="button"
                 className="g"
-                style={{ width: '100%', marginTop: '6px' }}
                 onClick={() => setExpenseToDelete(null)}
               >
                 Cancel

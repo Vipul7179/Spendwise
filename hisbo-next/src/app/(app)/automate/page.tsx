@@ -569,7 +569,6 @@ export default function AutomatePage() {
               <button
                 type="button"
                 className="b"
-                style={{ width: '100%', marginBottom: '8px' }}
                 onClick={() => commitCsvImport('DMY')}
               >
                 DD/MM/YYYY &middot; e.g. {ambiguousSample.dmyEx}
@@ -577,7 +576,6 @@ export default function AutomatePage() {
               <button
                 type="button"
                 className="b"
-                style={{ width: '100%', marginBottom: '8px' }}
                 onClick={() => commitCsvImport('MDY')}
               >
                 MM/DD/YYYY &middot; e.g. {ambiguousSample.mdyEx}
@@ -585,7 +583,6 @@ export default function AutomatePage() {
               <button
                 type="button"
                 className="g"
-                style={{ width: '100%' }}
                 onClick={() => {
                   setPendingCsvRows(null);
                   setAmbiguousSample(null);

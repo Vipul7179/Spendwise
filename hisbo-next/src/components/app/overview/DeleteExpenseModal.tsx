@@ -46,7 +46,6 @@ export default function DeleteExpenseModal({
           <button
             type="button"
             className="b dng"
-            style={{ width: '100%', background: 'var(--bad)', color: '#fff', marginTop: '8px' }}
             onClick={onConfirm}
           >
             Delete
@@ -54,7 +53,6 @@ export default function DeleteExpenseModal({
           <button
             type="button"
             className="g"
-            style={{ width: '100%', marginTop: '6px' }}
             onClick={onCancel}
           >
             Cancel

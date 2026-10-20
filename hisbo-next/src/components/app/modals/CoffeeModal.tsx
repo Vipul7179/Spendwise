@@ -71,7 +71,6 @@ export default function CoffeeModal() {
           <button
             type="button"
             className="g"
-            style={{ width: '100%', marginTop: '12px' }}
             onClick={closeModal}
           >
             Close

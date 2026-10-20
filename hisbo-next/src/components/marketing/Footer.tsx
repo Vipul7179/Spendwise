@@ -11,6 +11,9 @@ export default function Footer() {
         <a href="https://www.linkedin.com/in/vipul-singh-46792a1a4" target="_blank" rel="noopener noreferrer">
           LinkedIn
         </a>
+        <Link href="/blog">
+          Blog
+        </Link>
         <Link href="/privacy">
           Terms and Privacy
         </Link>

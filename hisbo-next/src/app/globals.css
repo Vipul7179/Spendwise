@@ -107,24 +107,42 @@ a {
   transform: scale(0.98);
 }
 
+.b.dng,
+.bad .b {
+  background: var(--bad) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+}
+
+.b.dng:hover,
+.bad .b:hover {
+  background: color-mix(in srgb, var(--bad) 88%, black) !important;
+}
+
 .g {
   font: inherit;
   background: none;
   border: 1px solid var(--line);
   color: var(--ink);
-  padding: 6px 12px;
-  border-radius: 9px;
+  padding: 8px 14px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   transition: background-color 0.2s, border-color 0.2s;
 }
 
 .g:hover {
   background-color: var(--card);
   border-color: var(--acc);
+}
+
+.g:active {
+  transform: scale(0.98);
 }
 
 .tag {
@@ -169,6 +187,18 @@ textarea {
   -webkit-appearance: none;
   appearance: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+/* Remove unwanted up/down spinner arrows from number inputs in Chromium and Firefox */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* Flexible inputs inside flex rows (.row) */
@@ -3134,17 +3164,39 @@ nav#nav {
   font-size: 1.05rem;
   flex: none;
 }
-.nm .b,
-.nm .g {
-  width: 100%;
-  margin-top: 6px;
-  flex: none;
-  padding: 12px;
-}
-.nm a.g {
-  display: block;
+/* Modals action rows and standardized buttons */
+.box .row > .b,
+.box .row > .g {
+  flex: 1 1 0;
+  min-height: 44px;
+  padding: 11px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  box-sizing: border-box;
+}
+
+.nm .b,
+.nm .g,
+.nm a.g,
+.nm a.b {
   width: 100%;
+  min-height: 44px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  margin-top: 8px;
+  flex: none;
 }
 .av {
   width: 76px;

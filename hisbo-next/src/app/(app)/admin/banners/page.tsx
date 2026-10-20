@@ -518,7 +518,6 @@ export default function AdminBannersPage() {
                   type="submit"
                   className="b cta"
                   disabled={isSaving}
-                  style={{ width: '100%', marginBottom: '8px' }}
                 >
                   {isSaving ? 'Saving…' : 'Save banner'}
                 </button>
@@ -526,7 +525,6 @@ export default function AdminBannersPage() {
                   type="button"
                   className="g"
                   disabled={isSaving}
-                  style={{ width: '100%' }}
                   onClick={() => setIsFormOpen(false)}
                 >
                   Cancel
@@ -561,7 +559,6 @@ export default function AdminBannersPage() {
               <button
                 type="button"
                 className="b dng"
-                style={{ width: '100%', background: 'var(--bad)', color: '#fff', marginTop: '8px' }}
                 onClick={handleDeleteBanner}
               >
                 Delete
@@ -569,7 +566,6 @@ export default function AdminBannersPage() {
               <button
                 type="button"
                 className="g"
-                style={{ width: '100%', marginTop: '6px' }}
                 onClick={() => setBannerToDelete(null)}
               >
                 Cancel

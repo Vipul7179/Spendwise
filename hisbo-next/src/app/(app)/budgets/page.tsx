@@ -193,7 +193,6 @@ export default function BudgetsPage() {
               <button
                 type="button"
                 className="b dng"
-                style={{ width: '100%', background: 'var(--bad)', color: '#fff', marginTop: '8px' }}
                 onClick={() => {
                   deleteCategory(categoryToDelete.id);
                   setCategoryToDelete(null);
@@ -204,7 +203,6 @@ export default function BudgetsPage() {
               <button
                 type="button"
                 className="g"
-                style={{ width: '100%', marginTop: '6px' }}
                 onClick={() => setCategoryToDelete(null)}
               >
                 Cancel

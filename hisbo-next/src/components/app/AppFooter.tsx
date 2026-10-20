@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useModal } from '@/context/ModalContext';
 
 export default function AppFooter() {
@@ -21,6 +22,27 @@ export default function AppFooter() {
       <div className="cred">
         Designed and developed by <b>Vipul Singh</b>
         <div className="soc">
+          <Link
+            href="/blog"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5A2.5 2.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5z" />
+              <path d="M8 7h8M8 11h8M8 15h6" />
+            </svg>
+            Blog
+          </Link>
+
           <a
             href="https://www.instagram.com/thevipulshow"
             target="_blank"
