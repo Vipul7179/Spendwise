@@ -1,0 +1,57 @@
+/* Public landing proportions from the supplied desktop and mobile captures. */
+
+.lp .lh { padding: calc(12px + env(safe-area-inset-top, 0px)) 25px 12px; }
+.lp .tlogo { width: 40px; height: 40px; }
+.lp .lbtn { padding: 14px 22px; border-radius: 15px; }
+.lp .lbtn.big { padding: 18px 32px; }
+.lp .lhr { padding: 70px 20px 88px; }
+.lp .lhr h1 { margin: 18px auto; }
+.lp .lhr .sub { margin-bottom: 30px; }
+.lp .ltrust { margin-top: 25px; }
+.lp .gnote { margin-top: 18px; }
+.lp .mkw { max-width: 1225px; margin-top: 60px; }
+.lp .mkbar { padding: 15px 20px; }
+.lp .mkb2 { padding: 25px; gap: 18px; }
+.lp .mkh { padding: 22px; }
+.lp .mkc { padding: 18px; }
+.lp .mdn { width: 105px; height: 105px; }
+.lp .mdn::after { width: 65px; height: 65px; }
+.lp .fcl { padding: 15px 18px; }
+.lp .lsec { max-width: 1325px; padding: 70px 25px 10px; }
+.lp .lsec > p { margin-bottom: 35px; }
+.lp .fg { gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 287px), 1fr)); }
+.lp .fcard { padding: 25px; border-radius: 25px; }
+.lp .fic { width: 58px; height: 58px; }
+.lp .steps { gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 275px), 1fr)); }
+.lp .stp, .lp .gc { padding: 28px; border-radius: 25px; }
+.lp .gcmp { max-width: 1025px; gap: 18px; }
+.lp .faq { max-width: 950px; }
+.lp .faq summary { padding: 22px 25px; }
+.lp .journal { max-width: 1325px; }
+.lp .lfin { margin: 70px 15px 0; padding: 55px 25px; border-radius: 35px; }
+.lp .lft { padding: 35px 25px; }
+@media (max-width: 600px) {
+  .lp .lh { padding-inline: 20px; }
+  .lp .lh .abrand { gap: 8px; }
+  .lp .lnav { gap: 7px; }
+  .lp .lnav .lbtn { padding: 12px 16px; }
+  .lp .landing-blog-link { margin-right: 0; }
+  .lp .lhr .lcta { flex-direction: column; align-items: center; }
+  .lp .ltrust { gap: 6px 12px; }
+  .lp .mkb2 { padding: 20px; }
+}
+.lp .gc li.y::before { content: '\2713'; }
+.lp .gc li.n::before { content: '!'; }
+
+@media (max-width: 420px) {
+  .lp .lh { padding-inline: 12px; gap: 12px; }
+  .lp .lh .abrand { font-size: 18px; flex: none; }
+  .lp .lh .tlogo { width: 32px; height: 32px; }
+  .lp .lnav .lbtn { padding: 10px 12px; font-size: 14px; white-space: nowrap; }
+  .lp .landing-blog-link { font-size: 13px; }
+}
+
+@media (min-width: 860px) {
+ .lp .mkb2 { min-height: 445px; }
+ .lp .mkh { min-height: 294px; }
+}
