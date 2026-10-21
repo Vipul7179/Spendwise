@@ -1,3 +1,5 @@
+
+import SkeletonImage from '@/components/common/SkeletonImage';
 import Link from 'next/link';
 import { LinkFeedback } from '@/components/common/NavigationFeedback';
 import { BlogPost, BlogCategory } from '@/types/blog';
@@ -22,8 +24,7 @@ export default function BlogCard({ post, category, compact = false }: BlogCardPr
     <article className="blog-card">
       <Link href={href} aria-label={`Read ${post.title}`}>
         {/* Using standard img with loading="lazy" for external dynamic images */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <SkeletonImage native
           src={image}
           alt={post.cover_alt || post.title}
           loading="lazy"

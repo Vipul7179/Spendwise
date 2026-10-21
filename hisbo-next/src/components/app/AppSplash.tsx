@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import Image from '@/components/common/SkeletonImage';
 
 export default function AppSplash({ ready }: { ready: boolean }) {
   if (ready) return null;

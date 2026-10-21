@@ -1,3 +1,5 @@
+
+import SkeletonImage from '@/components/common/SkeletonImage';
 import { SITE_URL, canonicalUrl as siteUrl, blogUrl, serializeJsonLd } from '@/lib/seo';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -139,8 +141,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         <header className="hero">
           <div className="frame">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <SkeletonImage native frameClassName="article-cover-image"
               src={coverImage}
               alt={post.cover_alt || post.title}
               loading="eager"

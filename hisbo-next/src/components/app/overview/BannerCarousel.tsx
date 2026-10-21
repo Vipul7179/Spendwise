@@ -1,5 +1,7 @@
 'use client';
 
+import SkeletonImage from '@/components/common/SkeletonImage';
+
 import React, { useEffect, useState, useRef, useCallback, useMemo, useSyncExternalStore } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -174,8 +176,7 @@ export default function BannerCarousel() {
 
               const content = (
                 <>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <SkeletonImage native
                     src={imgSrc}
                     alt={alt}
                     width={1600}

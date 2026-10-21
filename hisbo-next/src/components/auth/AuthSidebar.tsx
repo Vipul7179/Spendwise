@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from '@/components/common/SkeletonImage';
 import { usePathname } from 'next/navigation';
 import AuthPromoArtwork from './AuthPromoArtwork';
 import AuthPromoIcon from './AuthPromoIcon';

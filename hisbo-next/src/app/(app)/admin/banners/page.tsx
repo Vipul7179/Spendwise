@@ -1,5 +1,7 @@
 'use client';
 
+import SkeletonImage from '@/components/common/SkeletonImage';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -282,8 +284,7 @@ export default function AdminBannersPage() {
                   background: 'var(--bg)',
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <SkeletonImage native
                   src={b.image_url}
                   alt={b.title || 'Banner'}
                   loading="lazy"
@@ -391,8 +392,7 @@ export default function AdminBannersPage() {
                   Banner image
                 </label>
                 {editingBanner?.image_url && !formFile && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <SkeletonImage native retry
                     src={editingBanner.image_url}
                     alt="Current preview"
                     className="bprev"
