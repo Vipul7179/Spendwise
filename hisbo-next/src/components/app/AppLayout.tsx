@@ -14,6 +14,7 @@ import FloatingAddButton from '@/components/app/FloatingAddButton';
 import ToastContainer from '@/components/app/ToastContainer';
 import ModalHost from '@/components/app/modals/ModalHost';
 import AppSplash from '@/components/app/AppSplash';
+import DashboardSkeleton from '@/components/common/DashboardSkeleton';
 
 function ShortcutHandler() {
   const searchParams = useSearchParams();
@@ -49,7 +50,7 @@ export function AppShellContent({ children, publicView = false }: { children: Re
 
   if (access !== 'allow') {
     return <div className="app">{!publicView && !!user && <AppSplash ready={!isLoading} />}<main><div className="card" role="status" aria-label="Checking session">
-      {access === 'login' ? 'Opening login…' : 'Checking session…'}
+      {access === 'login' ? 'Opening login…' : <DashboardSkeleton />}
     </div></main></div>;
   }
 

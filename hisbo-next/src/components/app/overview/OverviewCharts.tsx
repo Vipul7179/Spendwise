@@ -489,12 +489,20 @@ export default function OverviewCharts({
         ))}
       </div>
 
-      <div className="cw">
-        {currentChartType === 'donut' && renderDonut()}
-        {currentChartType === 'pie' && renderPie()}
-        {currentChartType === 'bar' && renderBars()}
-        {currentChartType === 'line' && renderDaily()}
-      </div>
+      {!totalSpent && (currentChartType !== 'line' || !state.exps.some(expense => mk(expense.date) === selectedMonth && expense.amt > 0)) ? (
+        <div className="overview-chart-empty">
+          <span className="chart-empty-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><rect x="8" y="22" width="5" height="12" rx="2.5" fill="currentColor" /><rect x="18" y="8" width="5" height="26" rx="2.5" fill="currentColor" /><rect x="28" y="15" width="5" height="19" rx="2.5" fill="currentColor" /></svg></span>
+          <strong>No spending data yet</strong>
+          <p>Your spending will appear here once you add transactions.</p>
+        </div>
+      ) : (
+        <div className="cw">
+          {currentChartType === 'donut' && renderDonut()}
+          {currentChartType === 'pie' && renderPie()}
+          {currentChartType === 'bar' && renderBars()}
+          {currentChartType === 'line' && renderDaily()}
+        </div>
+      )}
     </div>
   );
 }

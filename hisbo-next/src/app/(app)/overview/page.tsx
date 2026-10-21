@@ -57,6 +57,12 @@ function getWeekRange(dateStr: string): [string, string] {
   return [ymdStr(a), ymdStr(b)];
 }
 
+function SummaryIcon({ kind }: { kind: 'calendar' | 'wallet' | 'budget' }) {
+  return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    {kind === 'calendar' ? <><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M7 3v4m10-4v4M3 11h18M7 15h2m4 0h2m-8 3h2" /></> : kind === 'wallet' ? <><path d="M20 8V5a2 2 0 0 0-2-2L5 6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h15V8H5" /><path d="M20 12h-6v5h6m-3-2.5h.01" /></> : <><path d="M12 3v9h9" /><path d="M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z" /></>}
+  </svg>;
+}
+
 export default function OverviewPage() {
   const { state, addExpense, deleteExpense, toggleHeroHide, showToast } = useApp();
   const { openName } = useModal();
@@ -106,7 +112,7 @@ export default function OverviewPage() {
       return `Month total ${fmt(totalSpentMonth, heroHidden)}`;
     }
     if (prevMonthTotal === 0) {
-      return `No spending recorded ${vsLabel}`;
+      return `No spending recorded ${vsLabel}.`;
     }
     const diffPct = Math.round(((totalSpentMonth - prevMonthTotal) / prevMonthTotal) * 100);
     if (diffPct === 0) {
@@ -209,16 +215,21 @@ export default function OverviewPage() {
 
   return (
     <div className="overview-page">
-      {/* Greeting Header */}
-      <div className="gr">
-        <div className="mut">{greeting},</div>
-        <h1>
-          {state.name || 'there'} <span className="wave">👋</span>
-        </h1>
-      </div>
+      <div className="overview-heading"><h1>Overview</h1></div>
 
       {/* Hero Summary Card */}
-      <div className="hero">
+      <div className="hero overview-spending-card">
+        <div className="spending-card-art" aria-hidden="true"><i /><i /><i /></div>
+        <div className="spending-card-greeting">
+          <p>{greeting},</p>
+          <h2>
+            {state.name ? (
+              <button type="button" onClick={() => openName(false)} aria-label="Edit your name" title="Edit name">
+                {state.name}
+              </button>
+            ) : 'there'}
+          </h2>
+        </div>
         <button
           type="button"
           className="heye"
@@ -249,16 +260,6 @@ export default function OverviewPage() {
             : isCurrentMonth
             ? 'Spent this month'
             : `Spent in ${formatMonthLabel(selectedMonth)}`}
-          {state.name ? (
-            <button
-              type="button"
-              className="edit"
-              onClick={() => openName(false)}
-              style={{ marginLeft: '10px' }}
-            >
-              Edit name
-            </button>
-          ) : null}
         </div>
 
         <div className="big" id="bt">
@@ -267,83 +268,91 @@ export default function OverviewPage() {
 
         <div className="hd">{comparisonText}</div>
 
-        <div className="tiles">
-          <div className="tile">
+        <div className="spending-card-progress">
+          <div
+            className="hp"
+            role="progressbar"
+            aria-label="Monthly budget used"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.min(Math.round(budgetPercentUsed), 100)}
+            aria-valuetext={`${Math.round(budgetPercentUsed)}% used`}
+          >
+            <i
+              style={{
+                width: `${Math.min(budgetPercentUsed, 100)}%`,
+                background: budgetPercentUsed > 100 ? '#ffb4a8' : '#fff',
+              }}
+            />
+          </div>
+          <span className="spending-card-percent">{Math.round(budgetPercentUsed)}% used</span>
+        </div>
+      </div>
+
+      <div className="tiles overview-summary">
+        <div className="tile">
+          <span className="summary-icon" aria-hidden="true"><SummaryIcon kind="calendar" /></span>
+          <div className="summary-copy">
             <span>Today</span>
             <b>{fmt(todaySpent, heroHidden)}</b>
             <small>{fS(todayStr)}</small>
           </div>
-          <div className="tile">
+        </div>
+        <div className="tile">
+          <span className="summary-icon" aria-hidden="true"><SummaryIcon kind="calendar" /></span>
+          <div className="summary-copy">
             <span>{selectedDay ? `Week of ${fS(weekRange[0])}` : 'This week'}</span>
             <b>{fmt(weekSpent, heroHidden)}</b>
-            <small>{`${fS(weekRange[0])} – ${fS(weekRange[1])}`}</small>
+            <small>{`${fS(weekRange[0])} \u2013 ${fS(weekRange[1])}`}</small>
           </div>
-          <div className="tile">
+        </div>
+        <div className="tile">
+          <span className="summary-icon" aria-hidden="true"><SummaryIcon kind="wallet" /></span>
+          <div className="summary-copy">
             <span>{remainingBudget < 0 ? 'Over budget by' : 'Remaining budget'}</span>
             <b>{fmt(Math.abs(remainingBudget), heroHidden)}</b>
             <small>{formatMonthLabel(selectedMonth)}</small>
           </div>
-          <div className="tile">
+        </div>
+        <div className="tile">
+          <span className="summary-icon" aria-hidden="true"><SummaryIcon kind="budget" /></span>
+          <div className="summary-copy">
             <span>Monthly budget</span>
             <b>{fmt(monthlyBudgetLimit, heroHidden)}</b>
             <small>{Math.round(budgetPercentUsed)}% used</small>
           </div>
         </div>
-
-        <div className="hp">
-          <i
-            style={{
-              width: `${Math.min(budgetPercentUsed, 100)}%`,
-              background: budgetPercentUsed > 100 ? '#ffb4a8' : '#fff',
-            }}
-          />
-        </div>
       </div>
-
-      {/* Monthly Report Banner */}
-      {isReportDue && (
-        <div className="card rb" style={{ marginBottom: '14px' }}>
-          <div>
-            <b>Your {formatMonthLabel(selectedMonth)} report is ready</b>
-            <div className="mut">Send it to {state.email}</div>
-          </div>
-          <button type="button" className="b" onClick={handleSendReport}>
-            Send report
-          </button>
-        </div>
-      )}
 
       {/* Promotional Banner Carousel */}
       <BannerCarousel />
 
-      {/* Date Navigation Bar */}
-      <DateBar
-        selectedMonth={selectedMonth}
-        selectedDay={selectedDay}
-        onMonthChange={(m) => {
-          setSelectedMonth(m);
-          setSelectedDay('');
-        }}
-        onDayChange={(d) => {
-          setSelectedDay(d);
-          if (d) setSelectedMonth(mk(d));
-        }}
-        onResetToday={() => {
-          setSelectedMonth(currentMonth);
-          setSelectedDay('');
-        }}
-      />
-
-      {/* Main Grid: Left Charts + Right Add/Budgets */}
-      <div className="grid two">
-        {/* Left Column: Spending Overview Chart */}
-        <div className="card">
-          <h2>
-            Spending overview{' '}
-            <span className="mut" style={{ fontWeight: 400 }}>
-              &middot; {selectedDay ? fD(selectedDay) : formatMonthLabel(selectedMonth)}
-            </span>
-          </h2>
+      {/* Spending chart and existing dashboard tools */}
+      <div className="grid overview-main-grid">
+        {/* Spending Overview Chart */}
+        <div className="card overview-chart-card">
+          <div className="overview-chart-heading">
+            <h2>Spending overview</h2>
+            <details className="overview-date-controls">
+              <summary aria-label="Choose month or day">{selectedDay ? fD(selectedDay) : formatMonthLabel(selectedMonth)}<span aria-hidden="true">&#8964;</span></summary>
+              <DateBar
+                selectedMonth={selectedMonth}
+                selectedDay={selectedDay}
+                onMonthChange={(m) => {
+                  setSelectedMonth(m);
+                  setSelectedDay('');
+                }}
+                onDayChange={(d) => {
+                  setSelectedDay(d);
+                  if (d) setSelectedMonth(mk(d));
+                }}
+                onResetToday={() => {
+                  setSelectedMonth(currentMonth);
+                  setSelectedDay('');
+                }}
+              />
+            </details>
+          </div>
           <OverviewCharts
             selectedMonth={selectedMonth}
             selectedDay={selectedDay}
@@ -353,8 +362,8 @@ export default function OverviewPage() {
           />
         </div>
 
-        {/* Right Column: Add Expense Form + Category Budget Progress */}
-        <div className="grid" style={{ alignContent: 'start' }}>
+        {/* Add Expense Form + Category Budget Progress */}
+        <div className="grid overview-secondary-grid" style={{ alignContent: 'start' }}>
           <div className="card">
             <h2>Add expense</h2>
             <form className="expense-form" onSubmit={handleAddExpenseSubmit}>
@@ -441,6 +450,19 @@ export default function OverviewPage() {
           </div>
         </div>
       </div>
+
+      {/* Monthly Report Banner */}
+      {isReportDue && (
+        <div className="card rb" style={{ marginBottom: '14px' }}>
+          <div>
+            <b>Your {formatMonthLabel(selectedMonth)} report is ready</b>
+            <div className="mut">Send it to {state.email}</div>
+          </div>
+          <button type="button" className="b" onClick={handleSendReport}>
+            Send report
+          </button>
+        </div>
+      )}
 
       {/* Full Width Card: Recent Expenses List */}
       <div className="card" style={{ marginTop: '14px' }}>

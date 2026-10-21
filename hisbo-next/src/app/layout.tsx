@@ -43,6 +43,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={bricolage.variable}>
       <body>
+        <noscript><style>{'.image-frame > img{opacity:1!important}.image-skeleton,.image-fallback{display:none!important}'}</style></noscript>
         <LegacyHashHandler />
         <NavigationHistory />
         <AnalyticsProvider />

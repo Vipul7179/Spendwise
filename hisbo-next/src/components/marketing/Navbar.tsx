@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from '@/components/common/SkeletonImage';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { LinkFeedback } from '@/components/common/NavigationFeedback';

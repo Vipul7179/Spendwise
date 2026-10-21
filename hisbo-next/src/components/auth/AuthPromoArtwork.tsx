@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image from '@/components/common/SkeletonImage';
 import AuthPromoIcon from './AuthPromoIcon';
 
 export default function AuthPromoArtwork() {
