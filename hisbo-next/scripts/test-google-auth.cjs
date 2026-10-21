@@ -44,12 +44,12 @@ test('callback errors display safe messages, including cancellation fragments',(
  assert.equal(oauthReturnError('?next=/overview'),null);
  assert.match(googleAuthError(Error('Missing NEXT_PUBLIC_SUPABASE_URL')),/unavailable/);
 });
-function callbackFixture({error=null,throwError=false,session={user:{id:'existing-supabase-id'}}}={}){
+function callbackFixture({error=null,throwError=false,session={user:{id:'existing-supabase-id'}},previewHost}={}){
  const cookies=[],exchanges=[];
  const route=runtime({
   '@supabase/ssr':{createServerClient(url,key,options){assert.equal(key,'fixture-anon');return {auth:{async exchangeCodeForSession(code){exchanges.push(code);if(throwError)throw Error('Network');if(!error&&session)options.cookies.setAll([{name:'sb-fixture-auth-token',value:'session-fixture',options:{httpOnly:false,path:'/'}}]);return {data:{session},error};}}};}},
   'next/headers':{cookies:async()=>({getAll:()=>[{name:'sb-fixture-code-verifier',value:'verifier'}],set:(name,value,options)=>cookies.push({name,value,options})})},
- },{process:{env:{NEXT_PUBLIC_SUPABASE_URL:'https://fixture.supabase.co',NEXT_PUBLIC_SUPABASE_ANON_KEY:'fixture-anon'}}})('src/app/auth/callback/route.ts');
+ },{process:{env:{NEXT_PUBLIC_SUPABASE_URL:'https://fixture.supabase.co',NEXT_PUBLIC_SUPABASE_ANON_KEY:'fixture-anon',VERCEL_URL:previewHost}}})('src/app/auth/callback/route.ts');
  return {GET:route.GET,cookies,exchanges};
 }
 for(const next of ['/overview','/reset-password','/budgets?month=10'])test('callback exchanges code, persists SSR session cookies and redirects safely '+next,async()=>{
@@ -68,7 +68,7 @@ test('cancellation and missing code never perform code exchange',async()=>{
 });
 test('email forms retain password auth handlers and exclude concurrent OAuth submission',async()=>{
  for(const [path,handler] of [['src/components/auth/LoginForm.tsx','signInWithPassword'],['src/app/(auth)/signup/page.tsx','signUp']]){
-  const fs=require('node:fs');const source=fs.readFileSync(path,'utf8');assert.ok(source.includes('supabase.auth.'+handler+'('));assert.ok(source.includes('disabled={loading || oauthLoading}'));assert.ok(source.includes('if (oauthLoading) return;'));
+  const fs=require('node:fs');const source=fs.readFileSync(path,'utf8');assert.ok(source.includes('supabase.auth.'+handler+'('));assert.ok(source.includes('disabled={loading || oauthLoading'));assert.ok(source.includes('if (pending.current || oauthLoading) return;'));
  }
  await tick();
 });
@@ -78,11 +78,11 @@ test('existing email/password login still submits and retains local financial re
  const snapshot=JSON.stringify({exps:[{id:'local-expense',amt:99}],goals:[{id:'local-goal'}],groups:[{id:'local-group'}]});
  const storage=new Map([['spendwise_v1',snapshot],['sw_guest','1']]);
  const client={auth:{async signInWithPassword(payload){attempts.push(payload);return {data:{session:{user:{id:'existing-user'}},user:{id:'existing-user'}},error:null};}},from(){return {select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{data:{exps:[{id:'cloud-expense'}]}}}),upsert(){assert.fail('Existing cloud record should not be overwritten by login form');}};}};
- const react={useState(initial){const i=cursor++;if(!(i in hooks))hooks[i]=initial;return [hooks[i],v=>hooks[i]=v];}};
- const Form=runtime({react,'next/navigation':{useRouter:()=>({push:p=>routes.push(p),refresh(){}})},'next/link':{},'@/components/auth/AuthTabs':{},'@/components/auth/GuestEntryButton':{},'@/components/auth/GoogleAuthButton':{},'@/lib/supabase/client':{createClient:()=>client},'react/jsx-runtime':{jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})}},{localStorage:{getItem:k=>storage.get(k),removeItem:k=>storage.delete(k),setItem:(k,v)=>storage.set(k,v)},console:{log(){},warn(){}}})('src/components/auth/LoginForm.tsx').default;
+ const react={useRef(initial){const i=cursor++;return hooks[i]??={current:initial};},useState(initial){const i=cursor++;if(!(i in hooks))hooks[i]=initial;return [hooks[i],v=>hooks[i]=v];}};
+ const Form=runtime({react,'next/navigation':{useRouter:()=>({replace:p=>routes.push(p),refresh(){}})},'next/link':{},'@/components/auth/AuthTabs':{},'@/components/auth/GuestEntryButton':{},'@/components/auth/GoogleAuthButton':{},'@/lib/supabase/client':{createClient:()=>client},'react/jsx-runtime':{jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})}},{localStorage:{getItem:k=>storage.get(k),removeItem:k=>storage.delete(k),setItem:(k,v)=>storage.set(k,v)},console:{log(){},warn(){}}})('src/components/auth/LoginForm.tsx').default;
  const render=()=>{cursor=0;return Form();};
  let nodes=walk(render());nodes.find(n=>n.props?.id==='login-email').props.onChange({target:{value:'existing@example.test'}});nodes.find(n=>n.props?.id==='login-password').props.onChange({target:{value:'fixture-password'}});
- nodes=walk(render());await nodes.find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+ nodes=walk(render());const submit=nodes.find(n=>n.type==='form').props.onSubmit;const first=submit({preventDefault(){}});await submit({preventDefault(){}});await first;
  assert.equal(attempts.length,1);assert.equal(attempts[0].email,'existing@example.test');assert.equal(storage.get('spendwise_v1'),snapshot);assert.deepEqual(routes,['/overview']);
 });
 
@@ -91,14 +91,35 @@ test('callback keeps loopback host and accepts only known production proxy host'
  for(const [url,headers,origin] of cases){const res=await callbackFixture().GET(new Request(url,{headers}));assert.equal(res.headers.get('location'),origin+'/login?error=access_denied');}
 });
 
-test('signup has one shared required consent checkbox gating Google and email signup',()=>{
+test('preview callback stays on the Vercel deployment holding its verifier cookie',async()=>{
+ const host='hisbo-preview-123.vercel.app';
+ const response=await callbackFixture({previewHost:host}).GET(new Request('https://'+host+'/auth/callback?code=fixture',{headers:{host}}));
+ assert.equal(response.headers.get('location'),'https://'+host+'/overview');
+});
+
+test('signup Google stays available with empty email fields and unchecked email consent',()=>{
  const hooks=[];let cursor=0;
- const Signup=runtime({react:{useState(initial){const i=cursor++;if(!(i in hooks))hooks[i]=initial;return [hooks[i],value=>hooks[i]=value];}},'next/navigation':{useRouter:()=>({})},'next/link':{},'@/components/auth/AuthTabs':{},'@/components/auth/GuestEntryButton':{},'@/components/auth/GoogleAuthButton':{default:'GoogleAuthButton'},'react/jsx-runtime':{jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})}})('src/app/(auth)/signup/page.tsx').default;
+ const Signup=runtime({react:{useRef(initial){const i=cursor++;return hooks[i]??={current:initial};},useState(initial){const i=cursor++;if(!(i in hooks))hooks[i]=initial;return [hooks[i],value=>hooks[i]=value];}},'next/navigation':{useRouter:()=>({})},'next/link':{},'@/components/auth/AuthTabs':{},'@/components/auth/GuestEntryButton':{},'@/components/auth/GoogleAuthButton':{default:'GoogleAuthButton'},'react/jsx-runtime':{jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})}})('src/app/(auth)/signup/page.tsx').default;
  const render=()=>{cursor=0;return walk(Signup());};
  let nodes=render();let boxes=nodes.filter(n=>n.type==='input'&&n.props.type==='checkbox');
  assert.equal(boxes.length,1);assert.equal(boxes[0].props.required,true);
  assert.equal(boxes[0].props.form,nodes.find(n=>n.type==='form').props.id);
- assert.equal(nodes.find(n=>n.type==='GoogleAuthButton').props.disabled,true);
+ assert.equal(nodes.find(n=>n.type==='GoogleAuthButton').props.disabled,false);
+ assert.equal(nodes.find(n=>n.props?.id==='signup-name').props.value,'');
+ assert.equal(nodes.find(n=>n.props?.id==='signup-email').props.value,'');
+ assert.equal(nodes.find(n=>n.props?.id==='signup-password').props.value,'');
+ assert.equal(walk(nodes.find(n=>n.type==='form')).some(n=>n.type==='GoogleAuthButton'),false);
  boxes[0].props.onChange({target:{checked:true}});nodes=render();
  assert.equal(nodes.find(n=>n.type==='GoogleAuthButton').props.disabled,false);
+ const submit=()=>render().find(n=>n.type==='button'&&n.props.type==='submit');
+ assert.equal(submit().props.disabled,true);
+ const fill=(id,value)=>render().find(n=>n.props?.id===id).props.onChange({target:{value}});
+ fill('signup-name','Test User');fill('signup-email','test@example.test');fill('signup-password','long-password');
+ assert.equal(submit().props.disabled,false);
+ fill('signup-email','invalid');assert.equal(submit().props.disabled,true);
+ fill('signup-email','test@example.test');fill('signup-password','short');assert.equal(submit().props.disabled,true);
+ fill('signup-password','long-password');fill('signup-name','   ');assert.equal(submit().props.disabled,true);
+ fill('signup-name','Test User');render().find(n=>n.type==='input'&&n.props.type==='checkbox').props.onChange({target:{checked:false}});
+ assert.equal(submit().props.disabled,true);
+ assert.equal(render().find(n=>n.type==='GoogleAuthButton').props.disabled,false);
 });

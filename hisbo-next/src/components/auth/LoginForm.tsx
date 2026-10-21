@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import AppSplash from '@/components/app/AppSplash';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthTabs from '@/components/auth/AuthTabs';
@@ -17,10 +18,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOAuthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const pending = useRef(false);
+  const [initializing, setInitializing] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (oauthLoading) return;
+    if (pending.current || oauthLoading) return;
     setError(null);
 
     const trimmedEmail = email.trim();
@@ -33,6 +36,7 @@ export default function LoginPage() {
       return;
     }
 
+    pending.current = true;
     setLoading(true);
     try {
       const supabase = createClient();
@@ -46,6 +50,7 @@ export default function LoginPage() {
       }
 
       if (data.session) {
+        setInitializing(true);
         // Clear guest session flag on successful login
         localStorage.removeItem('sw_guest');
 
@@ -77,17 +82,19 @@ export default function LoginPage() {
           }
         }
 
-        router.push('/overview');
-        router.refresh();
+        router.replace('/overview');
       }
     } catch (err: any) {
+      setInitializing(false);
       setError(getFriendlyAuthErrorMessage(err));
     } finally {
       setLoading(false);
+      pending.current = false;
     }
   };
 
 
+  if (initializing) return <AppSplash ready={false} />;
   return (
     <>
       <AuthTabs />

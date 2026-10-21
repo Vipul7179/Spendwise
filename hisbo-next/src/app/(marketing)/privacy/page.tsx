@@ -1,7 +1,6 @@
 import { canonicalUrl } from '@/lib/seo';
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import Image from 'next/image';
+import PolicyBackButton from '@/components/common/PolicyBackButton';
 
 export const metadata: Metadata = {
   title: 'Terms and Privacy Policy',
@@ -14,16 +13,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <main className="privacy-main">
-      <Link className="back" href="/">
-        <Image
-          src="/icon-192.png"
-          alt=""
-          width={28}
-          height={28}
-          style={{ verticalAlign: 'middle', borderRadius: '8px', marginRight: '8px' }}
-        />
-        Back to Hisbo
-      </Link>
+      <PolicyBackButton />
 
       <div className="card" style={{ marginBottom: '18px' }}>
         <h1>Terms and Privacy Policy</h1>

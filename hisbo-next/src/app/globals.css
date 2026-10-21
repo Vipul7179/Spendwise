@@ -3805,7 +3805,9 @@ a.bn:focus-visible {
 .expense-delete-dialog .b.dng:hover { background: #f26e60 !important; }
 .app-splash { position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; background: linear-gradient(125deg,#06382a,#0f7a58); color: #fff; opacity: 1; transition: opacity 220ms ease; }
 .app-splash > div { text-align: center; }
-.app-splash img { display: block; margin: auto; border-radius: 32px; }
+.app-splash img { display: block; margin: auto; border-radius: 32px; animation: splash-breathe 1.6s ease-in-out infinite alternate; }
+@keyframes splash-breathe { to { transform: scale(1.035); opacity: .8; } }
+@media (prefers-reduced-motion: reduce) { .app-splash img { animation: none; } }
 .app-splash p { font-size: 20px; color: #bfdfd4; margin: 20px 0 0; }
 .app-splash-exit { opacity: 0; pointer-events: none; }
 @media (max-width: 420px) { .overview-page .expense-actions { flex-direction: column; align-items: flex-end; gap: 6px; }.overview-page .expense-row { gap: 10px; } }

@@ -81,7 +81,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   const [categories, relatedPosts] = await Promise.all([
-    getBlogCategories(),
+    // Taxonomy is optional decoration; an unavailable category query must not
+    // take every otherwise readable published article down with it.
+    getBlogCategories().catch(() => []),
     getRelatedBlogPosts(post.id, post.category_id, 3),
   ]);
 
