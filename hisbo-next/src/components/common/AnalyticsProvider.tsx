@@ -25,16 +25,18 @@ export default function AnalyticsProvider() {
   useEffect(() => {
     if (consent !== 'granted' || !analyticsConfigured) return;
     let active = true;
+    let authChanged = false;
     let unsubscribe = () => {};
     try {
       const client = createClient();
       void client.auth.getSession().then(({ data: { session } }) => {
-        if (!active) return;
+        if (!active || authChanged) return;
         currentUser.current = session?.user || null;
         setAnalyticsUser(session?.user.id || null);
-      }).catch(() => { if (active) setAnalyticsUser(null); });
+      }).catch(() => { if (active && !authChanged) setAnalyticsUser(null); });
       const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
         if (!active) return;
+        authChanged = true;
         currentUser.current = session?.user || null;
         if (event === 'SIGNED_OUT') clearAnalyticsUser();
         else setAnalyticsUser(session?.user.id || null);

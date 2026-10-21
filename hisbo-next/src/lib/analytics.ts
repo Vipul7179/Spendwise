@@ -45,6 +45,7 @@ let identityReady = false;
 let userId: string | null = null;
 let mode: UserMode = 'anonymous';
 let lastPage: string | null = null;
+const authSuccesses = new Set<string>();
 let consentOverride: Consent | null = null;
 let queue: Array<{ name: AnalyticsEvent; params: Record<string, unknown>; userId: string | null }> = [];
 
@@ -52,17 +53,18 @@ function browser() { return typeof window !== 'undefined'; }
 function read(key: string, session = false): string | null {
   try { return (session ? window.sessionStorage : window.localStorage).getItem(key); } catch { return null; }
 }
-function write(key: string, value: string | null, session = false) {
+function write(key: string, value: string | null, session = false): boolean {
   try {
     const storage = session ? window.sessionStorage : window.localStorage;
     if (value === null) storage.removeItem(key); else storage.setItem(key, value);
-  } catch { /* Analytics must never interfere with the app. */ }
+    return true;
+  } catch { return false; /* Analytics must never interfere with the app. */ }
 }
 function notify() { if (browser() && window.dispatchEvent) window.dispatchEvent(new Event(CHANGE)); }
 export function browserOptOut(): boolean {
   if (!browser()) return false;
   const nav = window.navigator as Navigator & { globalPrivacyControl?: boolean };
-  return nav?.globalPrivacyControl === true || nav?.doNotTrack === '1';
+  return nav?.globalPrivacyControl === true || nav?.doNotTrack === '1' || nav?.doNotTrack === 'yes';
 }
 export function getAnalyticsConsent(): Consent {
   if (!browser()) return 'unknown';
@@ -124,8 +126,9 @@ export function initializeAnalytics() {
   disabled(false);
   if (!initialized) {
     window.dataLayer = window.dataLayer || [];
-    window.gtag = function () { window.dataLayer!.push(arguments); };
+    window.gtag = window.gtag || function () { window.dataLayer!.push(arguments); };
     command('consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+    command('consent', 'update', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
     command('js', new Date());
     // Keep changing identity/page fields at global scope: a fixed config-level
     // value would override later `set` calls (including logout's null user ID).
@@ -206,6 +209,7 @@ export function setAnalyticsUser(id: string | null) {
 }
 export function clearAnalyticsUser() {
   userId = null; mode = 'anonymous'; identityReady = true;
+  authSuccesses.clear();
   for (const key of [GUEST_SESSION_KEY, SIGNUP_KEY, 'hisbo_analytics_onboarding_v1']) write(key, null, true);
   if (permitted() && scriptReady) command('set', { user_id: null });
   notify();
@@ -235,6 +239,11 @@ export function trackAuthFailure(method: 'email' | 'google') {
 }
 export function trackAuthSuccess(method: 'email' | 'google', event: 'login' | 'sign_up', id: string, wasGuest: boolean) {
   setAnalyticsUser(id);
+  if (!permitted()) return;
+  // Ignore repeated callbacks until a successful sign-out resets the boundary.
+  const key = `${id}:${method}:${event}`;
+  if (authSuccesses.has(key)) return;
+  authSuccesses.add(key);
   trackEvent(event, { method, action_source: method === 'google' ? 'google_oauth' : 'email_form', success: true });
   const conversion = storedObject(CONVERSION_KEY);
   if ((event === 'sign_up' && wasGuest) || (conversion?.id === id && typeof conversion.started === 'number' && Date.now() - conversion.started < 86400000)) {
@@ -269,7 +278,7 @@ export function consumeGoogleAnalyticsFlow(user: { id: string; created_at?: stri
 }
 function stopAnalytics() {
   if (!browser()) return;
-  disabled(true); queue = []; lastPage = null; userId = null; mode = 'anonymous'; identityReady = false;
+  disabled(true); queue = []; authSuccesses.clear(); lastPage = null; userId = null; mode = 'anonymous'; identityReady = false;
   if (initialized) {
     command('consent', 'update', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
     command('set', { user_id: null });
@@ -293,8 +302,8 @@ function stopAnalytics() {
   } catch { /* Browser cookie policies may forbid access. */ }
 }
 export function setAnalyticsConsent(value: 'granted' | 'denied') {
-  consentOverride = value;
-  write(CONSENT_KEY, value);
+  // Durable preferences take precedence over an older in-memory choice.
+  consentOverride = write(CONSENT_KEY, value) ? null : value;
   if (value === 'denied' || browserOptOut()) stopAnalytics();
   notify();
 }

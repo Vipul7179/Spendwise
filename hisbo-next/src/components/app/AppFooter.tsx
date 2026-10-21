@@ -22,6 +22,7 @@ export default function AppFooter() {
       <div className="cred">
         Designed and developed by <b>Vipul Singh</b>
         <div className="soc">
+          <Link href="/privacy#analytics-preferences">Privacy policy</Link>
           <Link
             href="/blog"
             style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}

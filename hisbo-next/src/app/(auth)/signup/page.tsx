@@ -302,7 +302,7 @@ export default function SignUpPage() {
               <li>A strong password helps keep your account safe</li>
             </ul>
 
-            <label className="chk">
+            <label className="chk signup-agreement">
               <input
                 type="checkbox"
                 form="signup-email-form"

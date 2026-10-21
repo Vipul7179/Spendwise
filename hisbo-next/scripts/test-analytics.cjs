@@ -14,10 +14,10 @@ for (const consent of ['unknown', 'denied', 'granted']) test(`preferences stay c
     'next/link': { default: 'link' },
     '@/lib/analytics': { setAnalyticsConsent: value => choices.push(value) },
   });
-  const tree = load('src/components/common/AnalyticsPreferences.tsx').default({});
+  const tree = load('src/components/common/AnalyticsPreferences.tsx').default();
   const walk = node => node && typeof node === 'object' ? [node, ...[node.props?.children].flat().flatMap(walk)] : [];
   const nodes = walk(tree);
-  assert.equal(tree.type, 'footer');
+  assert.equal(tree.type, 'section');
   assert.equal(nodes.find(node => node.type === 'details').props.open, undefined, 'No automatic expansion');
   assert.equal(nodes.find(node => node.type === 'summary').props.children, 'Analytics Preferences');
   assert.deepEqual(choices, [], 'Rendering never records consent');
@@ -25,13 +25,13 @@ for (const consent of ['unknown', 'denied', 'granted']) test(`preferences stay c
   assert.deepEqual(choices, ['denied']); assert.equal(closed, true); assert.equal(focused, true);
 });
 
-test('embedded preferences respect a browser opt-out and do not show a popup', () => {
+test('Privacy Policy preferences respect a browser opt-out and do not show a popup', () => {
   const load = runtime({
     react: { useRef: () => ({ current: null }), useSyncExternalStore: () => 'denied:false:false:false:optout' },
     'react/jsx-runtime': { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }) },
     'next/link': { default: 'link' }, '@/lib/analytics': {},
   });
-  const tree = load('src/components/common/AnalyticsPreferences.tsx').default({ embedded: true });
+  const tree = load('src/components/common/AnalyticsPreferences.tsx').default();
   const walk = node => node && typeof node === 'object' ? [node, ...[node.props?.children].flat().flatMap(walk)] : [];
   const nodes = walk(tree);
   assert.equal(tree.type, 'section');
@@ -193,4 +193,81 @@ test('saved financial transitions emit safe actions and skip no-op settlements/c
   track(added, updated); track(updated, updated);
   assert.equal(emitted.filter(event => event[0] === 'savings_goal_completed').length, 1);
   assert.equal(emitted.filter(event => event[0] === 'split_expense_settled').length, 1);
+});
+
+test('initialization is idempotent and grants analytics before configuration', () => {
+  const f = fixture(); f.grant(); f.api.initializeAnalytics(); f.api.analyticsScriptReady();
+  assert.equal(f.commands().filter(c => c[0] === 'config').length, 1);
+  const configIndex = f.commands().findIndex(c => c[0] === 'config');
+  assert.ok(f.commands().slice(0, configIndex).some(c => c[0] === 'consent' && c[1] === 'update' && c[2].analytics_storage === 'granted'));
+});
+
+test('duplicate auth successes are suppressed but a new login after logout counts', () => {
+  const f = fixture(); f.grant();
+  f.api.trackAuthSuccess('email', 'login', USER, false);
+  f.api.trackAuthSuccess('email', 'login', USER, false);
+  assert.equal(f.events().filter(e => e[1] === 'login').length, 1);
+  f.api.clearAnalyticsUser(); f.api.trackAuthSuccess('email', 'login', USER, false);
+  assert.equal(f.events().filter(e => e[1] === 'login').length, 2);
+});
+
+test('saved rejection wins on focus even before a storage notification', () => {
+  const f = fixture(); f.api.subscribeAnalytics(() => {}); f.grant();
+  f.local.set('hisbo_analytics_consent_v1', 'denied');
+  f.window.dispatchEvent(new Event('focus'));
+  f.api.initializeAnalytics(); f.api.trackEvent('expense_created');
+  assert.equal(f.api.getAnalyticsConsent(), 'denied');
+  assert.equal(f.events().length, 0);
+  assert.equal(f.window['ga-disable-G-LCMEK1R5HY'], true);
+});
+
+test('revocation during tag load preserves the loaded command function on regrant', () => {
+  const f = fixture(); f.api.setAnalyticsConsent('granted'); f.api.initializeAnalytics();
+  f.api.trackEvent('expense_created'); f.api.setAnalyticsConsent('denied');
+  const loaded = [];
+  f.window.gtag = (...args) => loaded.push(args);
+  f.api.analyticsScriptReady(); f.api.setAnalyticsConsent('granted'); f.api.initializeAnalytics();
+  f.api.setAnalyticsUser(null); f.api.trackPageView('/');
+  assert.equal(loaded.filter(c => c[0] === 'event' && c[1] === 'expense_created').length, 0);
+  assert.equal(loaded.filter(c => c[0] === 'event' && c[1] === 'page_view').length, 1);
+});
+
+test('preferences exist only in Privacy Policy and never mount globally', () => {
+  const fs = require('node:fs');
+  assert.ok(!fs.readFileSync('src/app/layout.tsx', 'utf8').includes('AnalyticsPreferences'));
+  assert.ok(fs.readFileSync('src/app/(marketing)/privacy/page.tsx', 'utf8').includes('<AnalyticsPreferences />'));
+});
+
+test('provider gates the tag and session restoration cannot overwrite newer auth', async () => {
+  const effects = []; const identities = []; let resolveSession, authCallback;
+  let consent = 'granted';
+  const api = {
+    analyticsConfigured: true, measurementId: 'G-LCMEK1R5HY',
+    analyticsSnapshot: () => '', analyticsServerSnapshot: () => '', subscribeAnalytics: () => () => {},
+    initializeAnalytics: () => {}, analyticsInitialized: () => true,
+    analyticsIdentityReady: () => true, getAnalyticsConsent: () => consent,
+    analyticsScriptReady: () => {}, setAnalyticsUser: id => identities.push(id),
+    clearAnalyticsUser: () => identities.push(null), consumeGoogleAnalyticsFlow: () => {}, trackPageView: () => {},
+  };
+  const load = runtime({
+    react: { useEffect: effect => effects.push(effect), useRef: () => ({ current: null }), useSyncExternalStore: () => `${consent}:true:true:true:normal` },
+    'react/jsx-runtime': { jsx: (type, props) => ({ type, props }) },
+    'next/script': { default: 'script' }, 'next/navigation': { usePathname: () => '/overview' },
+    '@/lib/analytics': api,
+    '@/lib/supabase/client': { createClient: () => ({ auth: {
+      getSession: () => new Promise(resolve => { resolveSession = resolve; }),
+      onAuthStateChange: callback => { authCallback = callback; return { data: { subscription: { unsubscribe() {} } } }; },
+    } }) },
+  });
+  const Provider = load('src/components/common/AnalyticsProvider.tsx').default;
+  const tree = Provider();
+  assert.equal(tree.props.src, 'https://www.googletagmanager.com/gtag/js?id=G-LCMEK1R5HY');
+  const cleanups = effects.map(effect => effect());
+  authCallback('SIGNED_OUT', null);
+  resolveSession({ data: { session: { user: { id: USER } } } });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(identities, [null]);
+  cleanups.forEach(cleanup => cleanup?.());
+  consent = 'denied'; assert.equal(Provider(), null);
+  consent = 'unknown'; assert.equal(Provider(), null);
 });

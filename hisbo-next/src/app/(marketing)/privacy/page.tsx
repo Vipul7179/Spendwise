@@ -66,7 +66,7 @@ export default function PrivacyPage() {
           feature usage, and successful actions such as signing in or adding an expense.
           Analytics is optional and stays off until you choose “Allow analytics.”
           Rejecting analytics does not affect the app. Open “Analytics Preferences” in
-          the footer or below to change your choice. We also honor browser Global Privacy Control
+          this Privacy Policy below to change your choice. We also honor browser Global Privacy Control
           and Do Not Track preferences.
         </p>
         <p>
@@ -88,7 +88,7 @@ export default function PrivacyPage() {
           not automatically delete information previously processed by Google.
           See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google’s Privacy Policy</a>.
         </p>
-        <AnalyticsPreferences embedded />
+        <AnalyticsPreferences />
 
         <h3>Where it is stored</h3>
         <p>
