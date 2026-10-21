@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import AppSplash from '@/components/app/AppSplash';
+import { trackEmailSignupCreated } from '@/lib/analytics';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthTabs from '@/components/auth/AuthTabs';
@@ -63,6 +64,7 @@ export default function SignUpPage() {
     setLoading(true);
     try {
       const supabase = createClient();
+      const signupStarted = Date.now();
       const { data, error: authError } = await supabase.auth.signUp({
         email: trimmedEmail,
         password,
@@ -75,6 +77,12 @@ export default function SignUpPage() {
 
       if (authError) {
         throw authError;
+      }
+
+      // Supabase may return an obfuscated user with no identities for an
+      // existing email. That response must not be counted as a new signup.
+      if (data.user && (data.session || data.user.identities?.length)) {
+        trackEmailSignupCreated(data.user.id, !!data.session, localStorage.getItem('sw_guest') === '1', data.user.created_at, signupStarted);
       }
 
       if (data.session) {

@@ -46,7 +46,7 @@ export default function QuickAddModal() {
       cat: catId,
       date: NOW(),
       note: trimmedNote || undefined,
-    });
+    }, 'quick_add');
 
     const categoryObj = state.cats.find((c) => c.id === catId);
     showToast(`${fmt(amtPaise, state.hide)} added successfully to ${categoryObj?.name || 'category'}.`);

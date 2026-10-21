@@ -11,8 +11,8 @@ function appFixture({ signedIn = true, guest = false, saved, readFailure = false
   if (guest) storage.set('sw_guest', '1');
   if (pending) storage.set('sw_pending_user', 'fixture-user');
   let cursor = 0, firstRender = true, signOutCount = 0, authListener;
-  const writes = [], routes = [];
-  const failures = { read: readFailure, write: writeFailure, signOut: false };
+  const writes = [], routes = [], analyticsChanges = [], analyticsEvents = [];
+  const failures = { read: readFailure, write: writeFailure, signOut: false, storage: false };
   const session = signedIn ? { user: { id: 'fixture-user' } } : null;
   const client = {
     auth: {
@@ -53,10 +53,12 @@ function appFixture({ signedIn = true, guest = false, saved, readFailure = false
     react, 'react/jsx-runtime': { jsx: (type, props) => ({ type, props }) },
     'next/navigation': { useRouter: () => ({ push: route => routes.push(route) }) },
     '@/lib/supabase/client': { createClient: () => client },
+    '@/lib/analytics-state': { trackSavedStateChanges: (before, after, source) => analyticsChanges.push({ before, after, source }) },
+    '@/lib/analytics': { setAnalyticsUser() {}, clearAnalyticsUser() {}, trackEvent: (...event) => analyticsEvents.push(event) },
   }, {
     ...(now ? { Date: FixtureDate } : {}),
     window: {}, document: { documentElement: { setAttribute() {}, removeAttribute() {} }, createElement: () => ({ style: {}, remove() {} }), body: { appendChild() {} } },
-    localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
+    localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => { if (failures.storage) throw Error('Storage full'); storage.set(key, value); }, removeItem: key => storage.delete(key) },
     setTimeout: fn => { const id = Symbol(); timers.set(id, fn); return id; }, clearTimeout: id => timers.delete(id),
   });
   const { AppProvider } = load('src/context/AppContext.tsx');
@@ -65,12 +67,32 @@ function appFixture({ signedIn = true, guest = false, saved, readFailure = false
   let cleanup;
   return {
     async boot() { const cleanups = effects.map(effect => effect()); cleanup = () => cleanups.forEach(fn => fn?.()); await tick(); await tick(); return render(); },
-    render, failures, writes, storage, cloud, routes,
+    render, failures, writes, storage, cloud, routes, analyticsChanges, analyticsEvents,
     async flushTimers() { const pendingTimers = [...timers.values()]; timers.clear(); pendingTimers.forEach(fn => fn()); await tick(); await tick(); },
     async unmount() { cleanup(); await tick(); await tick(); },
     get signOutCount() { return signOutCount; },
   };
 }
+
+test('mutation analytics runs after local persistence, never for bootstrap or failed device saves', async () => {
+  const f = appFixture({ signedIn: false, guest: true });
+  await f.boot(); assert.equal(f.analyticsChanges.length, 0);
+  f.render().addExpense({ amt: 100, cat: 'food', date: '2026-10-21' }, 'quick_add');
+  assert.equal(f.analyticsChanges.length, 1);
+  assert.equal(f.analyticsChanges[0].source, 'quick_add');
+  assert.equal(JSON.parse(f.storage.get('spendwise_v1')).exps.length, 1);
+  f.failures.storage = true;
+  f.render().addExpense({ amt: 100, cat: 'food', date: '2026-10-21' });
+  assert.equal(f.analyticsChanges.length, 1, 'No successful action event when the device save failed');
+});
+
+test('logout analytics only runs after successful sign-out', async () => {
+  const f = appFixture(); await f.boot();
+  f.failures.signOut = true; assert.equal(await f.render().logout(), false);
+  assert.equal(f.analyticsEvents.filter(event => event[0] === 'logout').length, 0);
+  f.failures.signOut = false; assert.equal(await f.render().logout(), true);
+  assert.equal(f.analyticsEvents.filter(event => event[0] === 'logout').length, 1);
+});
 
 test('private-route access keeps anonymous, guest, signed-in and public Blog rules distinct', () => {
   const { appAccess } = runtime()('src/lib/auth-access.ts');
