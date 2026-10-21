@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRef, useSyncExternalStore } from 'react';
 import { analyticsServerSnapshot, analyticsSnapshot, setAnalyticsConsent, subscribeAnalytics } from '@/lib/analytics';
 
-export default function AnalyticsPreferences({ embedded = false }: { embedded?: boolean }) {
+export default function AnalyticsPreferences() {
   const snapshot = useSyncExternalStore(subscribeAnalytics, analyticsSnapshot, analyticsServerSnapshot);
   const consent = snapshot.split(':')[0];
   const optedOut = snapshot.endsWith(':optout');
@@ -33,7 +33,5 @@ export default function AnalyticsPreferences({ embedded = false }: { embedded?: 
     <span className="analytics-preferences-status" role="status">{consent === 'granted' ? 'Analytics allowed' : 'Analytics off'}</span>
   </div>;
 
-  return embedded
-    ? <section className="analytics-preferences-inline" aria-label="Analytics privacy settings">{content}</section>
-    : <footer className="analytics-privacy-footer" aria-label="Privacy settings">{content}</footer>;
+  return <section id="analytics-preferences" className="analytics-preferences-inline" aria-label="Analytics privacy settings">{content}</section>;
 }
