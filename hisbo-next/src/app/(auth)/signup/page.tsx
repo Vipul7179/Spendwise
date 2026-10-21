@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthTabs from '@/components/auth/AuthTabs';
+import GoogleAuthButton from '@/components/auth/GoogleAuthButton';
 import GuestEntryButton from '@/components/auth/GuestEntryButton';
 import { createClient } from '@/lib/supabase/client';
 import { getFriendlyAuthErrorMessage, calculatePasswordStrength } from '@/lib/auth-helpers';
@@ -16,6 +17,7 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOAuthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -23,6 +25,7 @@ export default function SignUpPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (oauthLoading) return;
     setError(null);
     setSuccessMessage(null);
 
@@ -147,8 +150,10 @@ export default function SignUpPage() {
           </div>
         )}
 
+        {!successMessage && <GoogleAuthButton disabled={loading || !agreeTerms} onBusyChange={setOAuthLoading} />}
+
         {!successMessage && (
-          <form onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <form id="signup-email-form" onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <label htmlFor="signup-name">
               Your name
             </label>
@@ -276,16 +281,18 @@ export default function SignUpPage() {
               <li>Tip: combine letters and numbers</li>
               <li>A strong password helps keep your account safe</li>
             </ul>
+
             <label className="chk">
               <input
                 type="checkbox"
+                form="signup-email-form"
                 checked={agreeTerms}
                 onChange={(e) => setAgreeTerms(e.target.checked)}
                 required
               />
               <span>
                 I agree to the{' '}
-                <Link href="/privacy" target="_blank">
+                <Link href="/privacy" target="_blank" rel="noopener noreferrer">
                   Terms and Privacy Policy
                 </Link>
                 . Your data stays private and is never sold.
@@ -295,7 +302,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               className="b cta"
-              disabled={loading}
+              disabled={loading || oauthLoading}
               style={{ width: '100%', marginTop: '6px' }}
             >
               {loading ? (

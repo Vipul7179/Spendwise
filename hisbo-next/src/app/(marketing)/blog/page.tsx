@@ -1,3 +1,4 @@
+import { canonicalUrl } from '@/lib/seo';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import BlogPostList from '@/components/blog/BlogPostList';
@@ -10,13 +11,13 @@ export const metadata: Metadata = {
   description:
     'Practical advice and thoughtful guides to help you build better money habits and feel more confident with your finances.',
   alternates: {
-    canonical: '/blog',
+    canonical: canonicalUrl('/blog'),
   },
   openGraph: {
     title: 'Hisbo Journal — Guides & Tips for Your Money Life',
     description:
       'Practical advice and thoughtful guides to help you build better money habits and feel more confident with your finances.',
-    url: 'https://www.hisbo.in/blog',
+    url: canonicalUrl('/blog'),
     siteName: 'Hisbo',
     type: 'website',
   },

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthTabs from '@/components/auth/AuthTabs';
+import GoogleAuthButton from '@/components/auth/GoogleAuthButton';
 import GuestEntryButton from '@/components/auth/GuestEntryButton';
 import { createClient } from '@/lib/supabase/client';
 import { getFriendlyAuthErrorMessage } from '@/lib/auth-helpers';
@@ -14,10 +15,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOAuthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (oauthLoading) return;
     setError(null);
 
     const trimmedEmail = email.trim();
@@ -107,6 +110,8 @@ export default function LoginPage() {
             {error}
           </div>
         )}
+
+        <GoogleAuthButton disabled={loading} onBusyChange={setOAuthLoading} />
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <label htmlFor="login-email">
@@ -204,7 +209,7 @@ export default function LoginPage() {
           <button
             type="submit"
             className="b cta"
-            disabled={loading}
+            disabled={loading || oauthLoading}
             style={{ width: '100%', marginTop: '6px' }}
           >
             {loading ? (

@@ -243,3 +243,38 @@ export async function getBlogCategories(): Promise<BlogCategory[]> {
   if (result.error) throw new BlogDataError(result.error);
   return result.categories;
 }
+
+
+export type SitemapBlogPost = Pick<BlogPost, 'id' | 'slug' | 'published_at' | 'updated_at'>;
+
+/** Sessionless narrow projection; keyset paging avoids offset shifts and server row caps. */
+export async function getSitemapBlogPosts(): Promise<SitemapBlogPost[]> {
+  try {
+    const supabase = createPublicClient();
+    const now = new Date().toISOString();
+    const posts: SitemapBlogPost[] = [];
+    let cursor: string | undefined;
+    for (;;) {
+      let query = supabase.from('blog_posts')
+        .select('id,slug,published_at,updated_at')
+        .eq('status', 'published')
+        .not('published_at', 'is', null)
+        .lte('published_at', now)
+        .or('noindex.is.null,noindex.eq.false')
+        .order('id', { ascending: true })
+        .limit(100);
+      if (cursor) query = query.gt('id', cursor);
+      const { data, error } = await query;
+      if (error || !data) throw new BlogDataError('network');
+      if (data.length === 0) return posts;
+      const page = data as SitemapBlogPost[];
+      const nextCursor = page[page.length - 1].id;
+      if (!nextCursor || (cursor && nextCursor <= cursor)) throw new BlogDataError('network');
+      posts.push(...page);
+      cursor = nextCursor;
+      // Continue even for a short page: Supabase may impose a smaller row cap.
+    }
+  } catch (error) {
+    throw error instanceof BlogDataError ? error : new BlogDataError(blogFailureKind());
+  }
+}

@@ -1,3 +1,4 @@
+import { canonicalUrl } from '@/lib/seo';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -6,7 +7,7 @@ export const metadata: Metadata = {
   title: 'Terms and Privacy Policy',
   description: 'Hisbo is a personal expense tracker made by Vipul Singh. Read our terms of use and privacy policy.',
   alternates: {
-    canonical: '/privacy',
+    canonical: canonicalUrl('/privacy'),
   },
 };
 
