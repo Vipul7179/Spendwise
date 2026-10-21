@@ -1,0 +1,17 @@
+{
+  "observedDate": "2026-10-21",
+  "url": "https://www.hisbo.in/signup",
+  "localCommit": "e9503be53461df611de5cfc4cc4c6f77cfa1794d",
+  "productionBuildId": "xgYuhfHQgiA1jRC_sFs6t",
+  "htmlSha256": "1dd04deaef722f63439206e1b1f0201c62ed443964b4e2c213bcd1416dedc531",
+  "productionGoogleTag": "<button type=\"button\" class=\"google-auth-button\" disabled=\"\" aria-busy=\"false\">",
+  "bundleUrl": "https://www.hisbo.in/_next/static/immutable/chunks/2q1nmd3oisc4m.js",
+  "bundleSha256": "62f502423af3b01421aa74c027be4a507d634e89b7cd84a106d7390c3496a725",
+  "deployedGoogleCondition": "disabled:y||!v",
+  "checkboxBinding": "checked:v,onChange:e=>f(e.target.checked)",
+  "localGoogleCondition": "disabled={loading}",
+  "browserController": null,
+  "revalidatedHtmlIdentical": true,
+  "workerEndpointStatus": 404,
+  "directVercelUrl": "Not yet supplied; comparison pending"
+}
