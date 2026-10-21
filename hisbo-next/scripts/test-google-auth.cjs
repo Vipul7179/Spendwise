@@ -91,14 +91,18 @@ test('callback keeps loopback host and accepts only known production proxy host'
  for(const [url,headers,origin] of cases){const res=await callbackFixture().GET(new Request(url,{headers}));assert.equal(res.headers.get('location'),origin+'/login?error=access_denied');}
 });
 
-test('signup has one shared required consent checkbox gating Google and email signup',()=>{
+test('signup Google stays available with empty email fields and unchecked email consent',()=>{
  const hooks=[];let cursor=0;
  const Signup=runtime({react:{useState(initial){const i=cursor++;if(!(i in hooks))hooks[i]=initial;return [hooks[i],value=>hooks[i]=value];}},'next/navigation':{useRouter:()=>({})},'next/link':{},'@/components/auth/AuthTabs':{},'@/components/auth/GuestEntryButton':{},'@/components/auth/GoogleAuthButton':{default:'GoogleAuthButton'},'react/jsx-runtime':{jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})}})('src/app/(auth)/signup/page.tsx').default;
  const render=()=>{cursor=0;return walk(Signup());};
  let nodes=render();let boxes=nodes.filter(n=>n.type==='input'&&n.props.type==='checkbox');
  assert.equal(boxes.length,1);assert.equal(boxes[0].props.required,true);
  assert.equal(boxes[0].props.form,nodes.find(n=>n.type==='form').props.id);
- assert.equal(nodes.find(n=>n.type==='GoogleAuthButton').props.disabled,true);
+ assert.equal(nodes.find(n=>n.type==='GoogleAuthButton').props.disabled,false);
+ assert.equal(nodes.find(n=>n.props?.id==='signup-name').props.value,'');
+ assert.equal(nodes.find(n=>n.props?.id==='signup-email').props.value,'');
+ assert.equal(nodes.find(n=>n.props?.id==='signup-password').props.value,'');
+ assert.equal(walk(nodes.find(n=>n.type==='form')).some(n=>n.type==='GoogleAuthButton'),false);
  boxes[0].props.onChange({target:{checked:true}});nodes=render();
  assert.equal(nodes.find(n=>n.type==='GoogleAuthButton').props.disabled,false);
 });

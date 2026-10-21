@@ -4,7 +4,7 @@ Date: 21 October 2026. Status: implemented locally. No commit, push, merge, depl
 
 ## Implemented behavior
 
-Login and Signup share a real Continue with Google button with the multicolour Google icon, the existing account palette, visible keyboard focus, 46px minimum height, a loading state and an “or continue with email” divider. Signup now has one shared required Terms and Privacy checkbox directly above Create account. Google signup is enabled after acceptance; the same checkbox belongs to the email form through its form attribute. The duplicate Google notice was removed.
+Login and Signup share a real Continue with Google button with the multicolour Google icon, the existing account palette, visible keyboard focus, 46px minimum height, a loading state and an “or continue with email” divider. Signup has one required email-signup Terms and Privacy checkbox directly above Create account. Google signup is independent of this checkbox and all email form fields; it is available immediately. The duplicate Google notice remains removed.
 
 The button uses the existing @supabase/ssr browser client and calls:
 
@@ -115,3 +115,11 @@ At the user's request, removed the duplicate Google-specific terms notice and mo
 Follow-up verification: TypeScript passed; ESLint passed for the changed components/test; full test suite passed (82/82, including 25 Google auth tests); production build passed; git diff --check passed. No commit or deployment performed.
 
 Consent placement follow-up: positioned the single checkbox directly above Create account as requested. Shared consent handling is retained. TypeScript and all 25 Google authentication tests passed.
+
+## Google signup availability fix (latest behavior)
+
+The previous shared-consent follow-ups above are historical and superseded by this change. The exact cause was `disabled={loading || !agreeTerms}` on Signup. It is now `disabled={loading}`: no name, email, password or email-terms requirement is applied to Google. The email request loading guard prevents concurrent authentication requests; the Google component separately locks repeated OAuth clicks and restores availability on errors/browser return. No separate Google consent requirement was found in the implementation beyond the email-form checkbox. No legal-policy assertion is made or provider consent bypassed.
+
+Changed files for this fix: `src/app/(auth)/signup/page.tsx`, `scripts/test-google-auth.cjs`, and this report. GoogleAuthButton remains outside the email form with `type="button"`; existing hover/focus/loading styling and safe error handling are unchanged. Email validation, callback, session, guest storage and financial data code are unchanged. The regression verifies Google is enabled with empty fields and unchecked email consent, remains outside the form, and the one required email checkbox remains present.
+
+Latest-fix verification: TypeScript, full ESLint, all 82 tests and the production build passed. Chrome checked Signup at widths 375 and 1440 in both light and dark themes: Google enabled, opacity 1, type=button, outside the form, all three email fields empty, one unchecked required email checkbox, 46px button height, no horizontal overflow. Keyboard focus produced a visible solid outline. Existing hover rule and loading/error regression coverage remain intact. No real Google account or user data was used; no commit, push or deployment performed. Temporary preview servers were stopped and browser viewport override reset.

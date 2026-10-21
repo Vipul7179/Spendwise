@@ -150,7 +150,7 @@ export default function SignUpPage() {
           </div>
         )}
 
-        {!successMessage && <GoogleAuthButton disabled={loading || !agreeTerms} onBusyChange={setOAuthLoading} />}
+        {!successMessage && <GoogleAuthButton disabled={loading} onBusyChange={setOAuthLoading} />}
 
         {!successMessage && (
           <form id="signup-email-form" onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
