@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { googleAuthError, oauthReturnError } from '@/lib/google-auth';
+import { beginGoogleAnalyticsFlow, trackAuthFailure } from '@/lib/analytics';
 
 function subscribeToLocation(onChange: () => void) {
   window.addEventListener('popstate', onChange);
@@ -46,6 +47,7 @@ export default function GoogleAuthButton({
     setError(null);
     try {
       const supabase = createClient();
+      beginGoogleAnalyticsFlow();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -56,6 +58,7 @@ export default function GoogleAuthButton({
       // Supabase navigates to Google. Keep locked until navigation or pageshow.
       // Do not clear guest storage or write user/profile data here.
     } catch (error) {
+      trackAuthFailure('google');
       setError(googleAuthError(error));
       pending.current = false;
       setLoading(false);

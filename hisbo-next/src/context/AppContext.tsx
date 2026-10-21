@@ -13,6 +13,8 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { serializeStateWrite, settleStateWrites } from '@/lib/state/sync';
 import { applyRecurringExpenses, heroIsHidden, restoreState, toggleGlobalPrivacy } from '@/lib/state/transitions';
+import { trackSavedStateChanges } from '@/lib/analytics-state';
+import { clearAnalyticsUser, setAnalyticsUser, trackEvent, type ActionSource } from '@/lib/analytics';
 
 const STORAGE_KEY = 'spendwise_v1';
 const GUEST_KEY = 'sw_guest';
@@ -37,7 +39,7 @@ interface AppContextType {
   showToast: (msg: string, type?: 'ok' | 'warn' | 'err') => void;
   burstConfetti: () => void;
   // Core Actions
-  addExpense: (exp: { amt: number; cat: string; date: string; note?: string }) => void;
+  addExpense: (exp: { amt: number; cat: string; date: string; note?: string }, source?: ActionSource) => void;
   deleteExpense: (id: string) => void;
   addCategory: (name: string, limit: number) => boolean;
   setCategoryLimit: (id: string, limit: number) => void;
@@ -173,24 +175,27 @@ export function AppProvider({ children, publicView = false }: { children: React.
   }, []);
 
   const queueSync = useCallback((nextState: AppState) => {
+    let saved = true;
     // Persist before scheduling the network write. Never remove data on failure.
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
       if (userRef.current && cloudReadyRef.current) localStorage.setItem(PENDING_USER_KEY, userRef.current.id);
     } catch {
+      saved = false;
       setSyncStatus('error');
       setSyncError('Could not save on this device. Keep this page open and retry sync.');
     }
-    if (!userRef.current) return;
+    if (!userRef.current) return saved;
     pendingRef.current = nextState;
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
-    if (!cloudReadyRef.current) return; // Do not overwrite cloud data after a failed read.
+    if (!cloudReadyRef.current) return saved; // Do not overwrite cloud data after a failed read.
     const userId = userRef.current.id;
     syncTimerRef.current = setTimeout(() => {
       syncTimerRef.current = null;
       const pending = pendingRef.current;
       if (pending && userRef.current?.id === userId) void pushToCloud(pending, userId);
     }, 1500);
+    return saved;
   }, [pushToCloud]);
 
   const readCloudState = useCallback(async (localState: AppState, userId: string) => {
@@ -293,16 +298,17 @@ export function AppProvider({ children, publicView = false }: { children: React.
     };
   }, [applyTheme, publicView, queueSync, readCloudState, showToast, pushToCloud, notifyRecurringAlerts]);
 
-  const updateStateAndSync = useCallback((updater: (prev: AppState) => AppState) => {
+  const updateStateAndSync = useCallback((updater: (prev: AppState) => AppState, source?: ActionSource) => {
     // Run transitions once, outside React's replayable state updater.
-    const next = updater(stateRef.current);
+    const previous = stateRef.current;
+    const next = updater(previous);
     stateRef.current = next;
     setState(next);
-    queueSync(next);
+    if (queueSync(next)) trackSavedStateChanges(previous, next, source);
   }, [queueSync]);
 
   const addExpense = useCallback(
-    (exp: { amt: number; cat: string; date: string; note?: string }) => {
+    (exp: { amt: number; cat: string; date: string; note?: string }, source?: ActionSource) => {
       updateStateAndSync((prev) => {
         const newExp: Expense = {
           id: uid(),
@@ -332,7 +338,7 @@ export function AppProvider({ children, publicView = false }: { children: React.
           alerts: [...newAlerts, ...prev.alerts],
           fired: newFired,
         };
-      });
+      }, source);
     },
     [updateStateAndSync, showToast]
   );
@@ -733,7 +739,10 @@ export function AppProvider({ children, publicView = false }: { children: React.
       queueSync(snapshot);
       if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
       const success = await pushToCloud(snapshot, userId);
-      if (success && !pendingRef.current) showToast('Synced to your account.');
+      if (success && !pendingRef.current) {
+        showToast('Synced to your account.');
+        trackEvent('sync_completed', { feature_name: 'account', action_source: 'account', success: true });
+      }
       else if (!success) showToast('Could not sync. Your changes remain on this device. Try again.', 'err');
       return success && !pendingRef.current;
     } catch (error) {
@@ -745,6 +754,7 @@ export function AppProvider({ children, publicView = false }: { children: React.
   }, [pushToCloud, queueSync, readCloudState, publicView, showToast, notifyRecurringAlerts]);
 
   const logout = useCallback(async (): Promise<boolean> => {
+    const analyticsUser = userRef.current;
     // Preserve both session and local data if its final cloud write fails.
     if (userRef.current && !(await syncNow())) return false;
     try {
@@ -755,6 +765,9 @@ export function AppProvider({ children, publicView = false }: { children: React.
       return false;
     }
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    if (analyticsUser) setAnalyticsUser(analyticsUser.id);
+    trackEvent('logout', { action_source: 'account', success: true });
+    clearAnalyticsUser();
     pendingRef.current = null;
     userRef.current = null;
     cloudReadyRef.current = false;

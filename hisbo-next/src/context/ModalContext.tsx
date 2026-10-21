@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { trackEvent, trackOnboardingStarted } from '@/lib/analytics';
 
 type ModalType = 'quickAdd' | 'name' | 'account' | 'coffee' | null;
 
@@ -21,11 +22,13 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
   const [modalProps, setModalProps] = useState<any>(null);
 
   const openQuickAdd = useCallback(() => {
+    trackEvent('feature_opened', { feature_name: 'expenses', action_source: 'quick_add' });
     setActiveModal('quickAdd');
     setModalProps(null);
   }, []);
 
   const openName = useCallback((first: boolean = false) => {
+    if (first) trackOnboardingStarted();
     setActiveModal('name');
     setModalProps({ first });
   }, []);

@@ -94,6 +94,8 @@ for (const mode of ['anonymous', 'guest', 'signed-in']) {
       },
       '@/lib/state/sync': { serializeStateWrite: fn => fn(), settleStateWrites: async () => {} },
       '@/lib/supabase/client': { createClient: () => client },
+      '@/lib/analytics-state': { trackSavedStateChanges: () => assert.fail('Public bootstrap emitted a mutation event') },
+      '@/lib/analytics': {},
     }, { window: {}, localStorage: storage, document: { documentElement: { setAttribute() {}, removeAttribute() {} } } });
     AppProvider({ children: null, publicView: true });
     const cleanups = effects.map(effect => effect());

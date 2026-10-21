@@ -1,6 +1,7 @@
 import { canonicalUrl } from '@/lib/seo';
 import type { Metadata } from 'next';
 import PolicyBackButton from '@/components/common/PolicyBackButton';
+import AnalyticsPreferences from '@/components/common/AnalyticsPreferences';
 
 export const metadata: Metadata = {
   title: 'Terms and Privacy Policy',
@@ -18,7 +19,7 @@ export default function PrivacyPage() {
       <div className="card" style={{ marginBottom: '18px' }}>
         <h1>Terms and Privacy Policy</h1>
         <p style={{ color: 'var(--mut)', fontSize: '0.88rem', margin: '4px 0 14px' }}>
-          Last updated: October 13, 2026
+          Last updated: October 21, 2026
         </p>
         <p>
           Hisbo is a personal expense tracker made by Vipul Singh. This page explains in plain
@@ -59,6 +60,36 @@ export default function PrivacyPage() {
           it.
         </p>
 
+        <h3>Optional usage analytics</h3>
+        <p>
+          With your permission, we use Google Analytics 4 to understand page visits,
+          feature usage, and successful actions such as signing in or adding an expense.
+          Analytics is optional and stays off until you choose “Allow analytics.”
+          Rejecting analytics does not affect the app. Open “Analytics Preferences” in
+          the footer or below to change your choice. We also honor browser Global Privacy Control
+          and Do Not Track preferences.
+        </p>
+        <p>
+          When enabled, Google uses an anonymous browser identifier and first-party
+          analytics cookies. After you sign in, we may associate subsequent events
+          with your internal Hisbo account ID. We clear that identity when you sign out.
+          This does not mean all earlier anonymous activity is automatically merged
+          with your account. Google processes technical usage information such as
+          browser and device characteristics and may derive approximate location.
+        </p>
+        <p>
+          We do not send amounts, balances, categories, merchant names, transaction
+          descriptions, group or member names, email addresses, phone numbers,
+          passwords, or authentication tokens to analytics. Page queries and fragments
+          are excluded, article paths are grouped, and automatic form and link tracking
+          are not enabled. Google Signals and advertising personalization are disabled.
+          Your consent preference is saved on this browser. Withdrawing consent stops
+          future collection and removes accessible Hisbo analytics cookies; it does
+          not automatically delete information previously processed by Google.
+          See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google’s Privacy Policy</a>.
+        </p>
+        <AnalyticsPreferences embedded />
+
         <h3>Where it is stored</h3>
         <p>
           Your data is stored in a database provided by Supabase. The app is hosted on Vercel and
@@ -68,8 +99,9 @@ export default function PrivacyPage() {
 
         <h3>Guest mode</h3>
         <p>
-          If you use Hisbo without an account, your data stays only in your own browser on your
-          device and is not sent to us.
+          If you use Hisbo without an account, your financial records stay only in your own browser
+          on your device and are not sent to us. Optional usage analytics, described above, only
+          runs if you allow it.
         </p>
 
         <h3>Your choices</h3>

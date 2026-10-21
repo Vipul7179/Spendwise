@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import AppSplash from '@/components/app/AppSplash';
+import { trackAuthFailure, trackAuthSuccess } from '@/lib/analytics';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthTabs from '@/components/auth/AuthTabs';
@@ -50,6 +51,7 @@ export default function LoginPage() {
       }
 
       if (data.session) {
+        trackAuthSuccess('email', 'login', data.user.id, localStorage.getItem('sw_guest') === '1');
         setInitializing(true);
         // Clear guest session flag on successful login
         localStorage.removeItem('sw_guest');
@@ -85,6 +87,7 @@ export default function LoginPage() {
         router.replace('/overview');
       }
     } catch (err: any) {
+      trackAuthFailure('email');
       setInitializing(false);
       setError(getFriendlyAuthErrorMessage(err));
     } finally {

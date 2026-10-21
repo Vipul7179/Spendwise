@@ -172,7 +172,7 @@ export default function AutomatePage() {
             cat: categoryId,
             date: parsed.date,
             note: parsed.mer.slice(0, 60),
-          });
+          }, 'sms_import');
           importedCount++;
         } else {
           skippedCount++;
@@ -206,7 +206,7 @@ export default function AutomatePage() {
           cat: categoryId,
           date,
           note: item.mer.slice(0, 60),
-        });
+        }, 'csv_import');
         count++;
       }
     });

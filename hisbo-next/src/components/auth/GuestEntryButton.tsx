@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { trackGuestModeStarted } from '@/lib/analytics';
 
 export default function GuestEntryButton({ className, children }: { className: string; children: React.ReactNode }) {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function GuestEntryButton({ className, children }: { className: s
           </ul>
           <button type="button" className="b cta" onClick={() => {
             localStorage.setItem('sw_guest', '1');
+            trackGuestModeStarted();
             setOpen(false);
             router.push('/overview');
           }}>Continue as guest</button>

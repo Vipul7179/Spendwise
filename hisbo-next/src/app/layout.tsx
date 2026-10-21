@@ -5,6 +5,8 @@ import { SITE_URL } from '@/lib/seo';
 
 import LegacyHashHandler from '@/components/common/LegacyHashHandler';
 import NavigationHistory from '@/components/common/NavigationFeedback';
+import AnalyticsProvider from '@/components/common/AnalyticsProvider';
+import AnalyticsPreferences from '@/components/common/AnalyticsPreferences';
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -44,7 +46,9 @@ export default function RootLayout({
       <body>
         <LegacyHashHandler />
         <NavigationHistory />
+        <AnalyticsProvider />
         {children}
+        <AnalyticsPreferences />
       </body>
     </html>
   );
