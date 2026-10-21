@@ -48,7 +48,7 @@ export function AppShellContent({ children, publicView = false }: { children: Re
   }, [access, router]);
 
   if (access !== 'allow') {
-    return <div className="app">{!publicView && <AppSplash ready={!isLoading} />}<main><div className="card" role="status" aria-label="Checking session">
+    return <div className="app">{!publicView && !!user && <AppSplash ready={!isLoading} />}<main><div className="card" role="status" aria-label="Checking session">
       {access === 'login' ? 'Opening login…' : 'Checking session…'}
     </div></main></div>;
   }

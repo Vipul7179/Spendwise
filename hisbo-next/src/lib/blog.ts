@@ -121,7 +121,8 @@ export async function getPublishedBlogPosts(options?: {
       .eq('status', 'published')
       .not('published_at', 'is', null)
       .lte('published_at', now)
-      .order('published_at', { ascending: false });
+      .order('published_at', { ascending: false })
+      .order('id', { ascending: false });
 
     if (options?.categoryId && options.categoryId !== 'all') {
       query = query.eq('category_id', options.categoryId);
@@ -138,6 +139,13 @@ export async function getPublishedBlogPosts(options?: {
     }
 
     const { data, count, error } = await query;
+    if (error?.code === 'PGRST103' && options?.offset) {
+      // PostgREST returns 416 for offsets beyond the last row, rather than an
+      // empty page with a count. Recover the filtered count so the route can
+      // redirect to the last real page instead of displaying an outage.
+      const first = await getPublishedBlogPosts({ ...options, offset: 0, limit: 1 });
+      return { posts: [], total: first.total, ...(first.error ? { error: first.error } : {}) };
+    }
     if (error) {
       console.error('[Blog] Error fetching posts:', error);
       return { posts: [], total: 0, error: 'network' };

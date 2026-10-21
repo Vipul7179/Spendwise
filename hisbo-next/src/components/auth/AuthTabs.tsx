@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { LinkFeedback } from '@/components/common/NavigationFeedback';
 
 export default function AuthTabs() {
   const pathname = usePathname();
@@ -11,10 +12,10 @@ export default function AuthTabs() {
     <div className={`tabs ${isSignUp ? 'up' : ''}`} id="tabs">
       <i className="ind" />
       <Link href="/login" className={!isSignUp ? 'on' : ''}>
-        Log in
+        Log in<LinkFeedback />
       </Link>
       <Link href="/signup" className={isSignUp ? 'on' : ''}>
-        Sign up
+        Sign up<LinkFeedback />
       </Link>
     </div>
   );

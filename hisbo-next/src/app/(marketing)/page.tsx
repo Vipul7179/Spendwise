@@ -168,8 +168,9 @@ const FAQS = [
 ];
 
 export default async function LandingPage() {
-  const { posts, error: postError } = await getPublishedBlogPosts({ limit: 3 });
-  const { categories, error: categoryError } = await getBlogCategoriesResult();
+  const [{ posts, error: postError }, { categories, error: categoryError }] = await Promise.all([
+    getPublishedBlogPosts({ limit: 3 }), getBlogCategoriesResult(),
+  ]);
   const blogError = postError || categoryError;
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
 

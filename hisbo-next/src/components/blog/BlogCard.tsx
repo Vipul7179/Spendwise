@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { LinkFeedback } from '@/components/common/NavigationFeedback';
 import { BlogPost, BlogCategory } from '@/types/blog';
 import { blogTimestampMeta, safeBlogImage } from '@/lib/blog';
 
@@ -28,6 +28,7 @@ export default function BlogCard({ post, category, compact = false }: BlogCardPr
           alt={post.cover_alt || post.title}
           loading="lazy"
         />
+        <LinkFeedback />
       </Link>
       <div className="content">
         <div className="meta">
@@ -35,14 +36,14 @@ export default function BlogCard({ post, category, compact = false }: BlogCardPr
           <span title={ts.cardTitle}>{ts.cardLabel}</span>
         </div>
         <h3>
-          <Link href={href}>{post.title}</Link>
+          <Link href={href}>{post.title}<LinkFeedback /></Link>
         </h3>
         <p>{displayExcerpt}</p>
       </div>
       <div className="foot">
         <span>{post.author_name || 'Hisbo Team'}</span>
         <Link href={href} className="g" aria-label="Read article">
-          Read article &rarr;
+          Read article &rarr;<LinkFeedback />
         </Link>
       </div>
     </article>

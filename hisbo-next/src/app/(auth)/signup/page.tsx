@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import AppSplash from '@/components/app/AppSplash';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthTabs from '@/components/auth/AuthTabs';
@@ -20,6 +21,8 @@ export default function SignUpPage() {
   const [oauthLoading, setOAuthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const pending = useRef(false);
+  const [initializing, setInitializing] = useState(false);
 
   const pwdStrength = calculatePasswordStrength(password);
   const canCreateAccount = Boolean(name.trim())
@@ -30,7 +33,7 @@ export default function SignUpPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (oauthLoading) return;
+    if (pending.current || oauthLoading) return;
     setError(null);
     setSuccessMessage(null);
 
@@ -56,6 +59,7 @@ export default function SignUpPage() {
       return;
     }
 
+    pending.current = true;
     setLoading(true);
     try {
       const supabase = createClient();
@@ -74,6 +78,7 @@ export default function SignUpPage() {
       }
 
       if (data.session) {
+        setInitializing(true);
         // Auto-confirmed or immediate session
         localStorage.removeItem('sw_guest');
 
@@ -94,8 +99,7 @@ export default function SignUpPage() {
           }
         }
 
-        router.push('/overview');
-        router.refresh();
+        router.replace('/overview');
       } else {
         // Confirmation email sent
         setSuccessMessage(
@@ -103,13 +107,16 @@ export default function SignUpPage() {
         );
       }
     } catch (err: any) {
+      setInitializing(false);
       setError(getFriendlyAuthErrorMessage(err));
     } finally {
       setLoading(false);
+      pending.current = false;
     }
   };
 
 
+  if (initializing) return <AppSplash ready={false} />;
   return (
     <>
       <AuthTabs />
@@ -297,7 +304,7 @@ export default function SignUpPage() {
               />
               <span>
                 I agree to the{' '}
-                <Link href="/privacy" target="_blank" rel="noopener noreferrer">
+                <Link href="/privacy?from=signup" target="_blank" rel="noopener noreferrer">
                   Terms and Privacy Policy
                 </Link>
                 . Your data stays private and is never sold.

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './auth-reference.css';
 import AuthSidebar from '@/components/auth/AuthSidebar';
-import AuthSessionRedirect from '@/components/auth/AuthSessionRedirect';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -16,7 +15,6 @@ export default function AuthLayout({
 }) {
   return (
     <div className="auth">
-      <AuthSessionRedirect />
       <div className="aw">
         <AuthSidebar />
         <section className="ap">

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { LinkFeedback } from '@/components/common/NavigationFeedback';
 
 function subscribeToGuest(callback: () => void) {
   window.addEventListener('storage', callback);
@@ -67,7 +68,7 @@ export default function Navbar() {
           href="/blog"
           style={isBlogActive ? { color: 'var(--acc)', fontWeight: 700 } : undefined}
         >
-          Blog
+          Blog<LinkFeedback />
         </Link>
 
         {sessionUser ? (
@@ -94,10 +95,10 @@ export default function Navbar() {
         ) : (
           <>
             <Link className="lbtn ol" href="/login">
-              Log in
+              Log in<LinkFeedback />
             </Link>
             <Link className="lbtn p" href="/signup">
-              Sign up
+              Sign up<LinkFeedback />
             </Link>
           </>
         )}

@@ -4,6 +4,7 @@ import './globals.css';
 import { SITE_URL } from '@/lib/seo';
 
 import LegacyHashHandler from '@/components/common/LegacyHashHandler';
+import NavigationHistory from '@/components/common/NavigationFeedback';
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -42,6 +43,7 @@ export default function RootLayout({
     <html lang="en" className={bricolage.variable}>
       <body>
         <LegacyHashHandler />
+        <NavigationHistory />
         {children}
       </body>
     </html>

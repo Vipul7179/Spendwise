@@ -9,6 +9,12 @@ function callbackOrigin(url: URL, request: Request): string {
     return 'https://www.hisbo.in';
   }
   if (/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) return `${url.protocol}//${host}`;
+  // Vercel preview callbacks must stay on the deployment that set the PKCE
+  // verifier cookie. Only trust deployment hosts supplied by Vercel itself.
+  const previewHosts = [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL];
+  if (previewHosts.some(value => value && value === host && value.endsWith('.vercel.app'))) {
+    return `https://${host}`;
+  }
   return 'https://www.hisbo.in';
 }
 
