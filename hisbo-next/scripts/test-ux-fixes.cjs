@@ -80,3 +80,26 @@ for (const [total, page, expected] of [[13, '2', 'Page 2 of 3'], [6, '1', 'Page 
     assert.equal(options.offset, (+page - 1) * 6);
   });
 }
+
+test('link loading feedback stays outside cards and never inserts ellipsis text', () => {
+  let pending = false;
+  const body = {};
+  const load = runtime({
+    react: { useEffect() {} },
+    'react-dom': { createPortal: (node, target) => ({ node, target }) },
+    'next/navigation': { usePathname: () => '/blog' },
+    'next/link': { useLinkStatus: () => ({ pending }) },
+    'react/jsx-runtime': { jsx: (type, props) => ({ type, props }) },
+  }, { document: { body } });
+  const { LinkFeedback } = load('src/components/common/NavigationFeedback.tsx');
+  assert.equal(LinkFeedback(), null);
+  pending = true;
+  const portal = LinkFeedback();
+  assert.equal(portal.target, body, 'Escapes card and button layout/transform contexts');
+  assert.equal(portal.node.props.className, 'navigation-progress');
+  assert.equal(portal.node.props.children, undefined, 'No dots or text inside clicked link');
+  assert.equal(portal.node.props.role, 'status');
+  assert.equal(portal.node.props['aria-label'], 'Opening page');
+  pending = false;
+  assert.equal(LinkFeedback(), null, 'Removed when navigation completes');
+});

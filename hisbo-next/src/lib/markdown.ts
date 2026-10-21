@@ -1,21 +1,27 @@
 import { marked } from 'marked';
-import DOMPurify from 'isomorphic-dompurify';
+import { FilterXSS } from 'xss';
+
+// Pure JavaScript sanitizer: no DOM emulation or CommonJS-to-ESM imports.
+const articleTags = [
+  'a', 'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'del',
+  'ul', 'ol', 'li', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'pre', 'code', 'img', 'figure', 'figcaption', 'hr',
+  'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
+  'span', 'div', 'sub', 'sup', 'mark',
+];
+const articleAttributes = ['href', 'src', 'alt', 'title', 'colspan', 'rowspan', 'scope', 'align'];
+const articleSanitizer = new FilterXSS({
+  whiteList: Object.fromEntries(articleTags.map(tag => [tag, articleAttributes])),
+  stripIgnoreTag: true,
+  stripIgnoreTagBody: ['script', 'style', 'iframe', 'object', 'embed', 'template', 'noscript'],
+  css: false,
+});
 
 export function sanitizeHtml(rawHtml: string): string {
   const fallback = '<p>There is no content for this article yet.</p>';
   if (!rawHtml || !String(rawHtml).trim()) return fallback;
 
-  // Sanitize with strict whitelist matching legacy Hisbo
-  let clean = DOMPurify.sanitize(String(rawHtml), {
-    ALLOWED_TAGS: [
-      'A', 'P', 'BR', 'STRONG', 'B', 'EM', 'I', 'U', 'S', 'DEL',
-      'UL', 'OL', 'LI', 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
-      'PRE', 'CODE', 'IMG', 'FIGURE', 'FIGCAPTION', 'HR',
-      'TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TH', 'TD',
-      'SPAN', 'DIV', 'SUB', 'SUP', 'MARK'
-    ],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'colspan', 'rowspan', 'scope', 'align']
-  });
+  let clean = articleSanitizer.process(String(rawHtml));
 
   // Ensure table wrapping for horizontal scroll on mobile
   clean = clean.replace(/<table(\b[^>]*)>/gi, '<div class="table-wrap"><table$1>');
