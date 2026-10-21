@@ -1,3 +1,4 @@
+import { SITE_URL, canonicalUrl as siteUrl, blogUrl, serializeJsonLd } from '@/lib/seo';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     post.seo_description ||
     post.excerpt ||
     'Practical ideas and guides for a healthier financial life with Hisbo.';
-  const canonicalUrl = `/blog/${encodeURIComponent(post.slug)}`;
+  const canonicalUrl = blogUrl(post.slug);
   const ogImage =
     safeBlogImage(post.og_image_url) ||
     safeBlogImage(post.cover_image_url) ||
@@ -50,7 +51,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     openGraph: {
       title,
       description,
-      url: `https://www.hisbo.in${canonicalUrl}`,
+      url: canonicalUrl,
       type: 'article',
       publishedTime: post.published_at || undefined,
       modifiedTime: post.updated_at || undefined,
@@ -108,15 +109,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     publisher: {
       '@type': 'Organization',
       name: 'Hisbo',
-      url: 'https://www.hisbo.in',
+      url: SITE_URL,
       logo: {
         '@type': 'ImageObject',
-        url: 'https://www.hisbo.in/logo-mark.webp',
+        url: siteUrl('/logo-mark.webp'),
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://www.hisbo.in/blog/${post.slug}`,
+      '@id': blogUrl(post.slug),
     },
   };
 
@@ -124,7 +125,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(articleJsonLd) }}
       />
 
       <section className="blog-shell blog-article">

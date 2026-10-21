@@ -16,6 +16,12 @@ const nextConfig = {
       },
     ],
   },
+  async headers() {
+    return [{
+      source: '/auth/callback',
+      headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+    }];
+  },
   async redirects() {
     return [
       {

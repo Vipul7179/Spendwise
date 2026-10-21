@@ -67,7 +67,7 @@
 .auth .pws { margin: 4px 0; }.auth .pws i { height: 3px; }.auth .pws span { font-size: 10px; }
 .auth .password-hints { list-style: none; padding: 0; margin: 3px 0; color: var(--auth-muted); font-size: 10px; line-height: 1.65; }
 .auth .password-hints li::before { content: '✓'; color: #00ad7a; margin-right: 6px; }
-.auth .auth-switch { text-align: center; font-size: 11px; color: var(--auth-muted); margin: 6px 0 0; }
+.auth #af > .auth-switch { text-align: center; font-size: 11px; color: var(--auth-muted); margin: 6px 0 0; }
 .auth .auth-switch a { color: var(--auth-accent); font-weight: 600; }
 .auth .forgot-dialog { position: fixed; inset: 0; margin: auto; z-index: 80; color: var(--auth-ink); background: var(--auth-surface); border: 1px solid var(--auth-line); border-radius: 22px; padding: 28px; width: min(440px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; box-shadow: 0 0 0 100vmax #061b2788; }
 .auth .forgot-dialog:modal { box-shadow: 0 20px 60px #001b2544; }.auth .forgot-dialog::backdrop { background: #061b2788; }
@@ -107,3 +107,14 @@
 .auth .feature-symbol svg { width: 25px; height: 25px; }
 .auth .auth-benefits svg { width: 28px; height: 28px; }
 @media (max-width: 899px) { .auth .auth-promo { overflow: hidden; } }
+
+/* OAuth uses the existing account palette and card width in both themes. */
+.auth .google-auth { width: 100%; min-width: 0; }
+.auth .google-auth-button { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 46px; padding: 11px 14px; border: 1px solid var(--auth-line); border-radius: 10px; background: var(--auth-surface); color: var(--auth-ink); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.auth .google-auth-button svg { flex: none; }
+.auth .google-auth-button:hover:not(:disabled) { background: var(--auth-field); border-color: var(--auth-accent); }
+.auth .google-auth-button:focus-visible { outline: 2px solid var(--auth-accent); outline-offset: 3px; }
+.auth .google-auth-button:disabled { opacity: .65; cursor: wait; }
+.auth .google-auth-error { color: var(--bad); font-size: 13px; line-height: 1.5; padding: 10px 12px; border: 1px solid var(--bad); border-radius: 10px; background: color-mix(in srgb, var(--bad) 8%, transparent); overflow-wrap: anywhere; }
+.auth .auth-email-divider { display: flex; align-items: center; gap: 10px; color: var(--auth-muted); font-size: 11px; margin: 18px 0 10px; }
+.auth .auth-email-divider::before, .auth .auth-email-divider::after { content: ''; flex: 1; height: 1px; background: var(--auth-line); }

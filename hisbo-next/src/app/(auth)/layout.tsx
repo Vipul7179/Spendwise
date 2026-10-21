@@ -4,6 +4,7 @@ import AuthSidebar from '@/components/auth/AuthSidebar';
 import AuthSessionRedirect from '@/components/auth/AuthSessionRedirect';
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: 'Account · Hisbo',
   description: 'Sign in or create your Hisbo account to sync your personal finance data.',
 };

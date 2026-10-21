@@ -1,48 +1,27 @@
 import type { MetadataRoute } from 'next';
-import { getPublishedBlogPosts } from '@/lib/blog';
+import { getSitemapBlogPosts } from '@/lib/blog';
+import { canonicalUrl, blogUrl } from '@/lib/seo';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.hisbo.in';
+// Outages must fail rather than publish a successful but incomplete sitemap.
+export const dynamic = 'force-dynamic';
 
-  // Static routes
-  const routes: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/blog`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/privacy`,
-      lastModified: new Date('2026-10-13'),
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    },
-  ];
-
-  // Dynamic published blog posts
-  try {
-    const { posts } = await getPublishedBlogPosts({ limit: 100 });
-    posts.forEach((post) => {
-      if (!post.noindex) {
-        routes.push({
-          url: `${baseUrl}/blog/${encodeURIComponent(post.slug)}`,
-          lastModified: new Date(post.updated_at || post.published_at || new Date()),
-          changeFrequency: 'weekly',
-          priority: 0.7,
-        });
-      }
-    });
-  } catch (error) {
-    console.warn('[Sitemap] Could not fetch blog posts for sitemap:', error);
-  }
-
-  return routes;
+function validDate(value: string | null | undefined): Date | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const posts = await getSitemapBlogPosts();
+  return [
+    { url: canonicalUrl('/'), changeFrequency: 'daily', priority: 1 },
+    { url: canonicalUrl('/blog'), changeFrequency: 'daily', priority: 0.8 },
+    { url: canonicalUrl('/privacy'), lastModified: new Date('2026-10-13'), changeFrequency: 'monthly', priority: 0.3 },
+    ...posts.map((post) => ({
+      url: blogUrl(post.slug),
+      lastModified: validDate(post.updated_at) || validDate(post.published_at),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    })),
+  ];
+}

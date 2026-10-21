@@ -1,3 +1,4 @@
+import { canonicalUrl, SITE_URL, serializeJsonLd } from '@/lib/seo';
 import type { Metadata } from 'next';
 import './landing-reference.css';
 import Link from 'next/link';
@@ -16,12 +17,12 @@ export const metadata: Metadata = {
   title: 'Hisbo — Track spending, stay on budget, save more',
   description: 'Hisbo brings your expenses, budgets, savings goals and shared bills into one clear, beautiful app.',
   alternates: {
-    canonical: '/',
+    canonical: canonicalUrl('/'),
   },
   openGraph: {
     title: 'Hisbo — Track spending, stay on budget, save more',
     description: 'Hisbo brings your expenses, budgets, savings goals and shared bills into one clear, beautiful app.',
-    url: 'https://www.hisbo.in',
+    url: SITE_URL,
     siteName: 'Hisbo',
     images: [
       {
@@ -178,10 +179,10 @@ export default async function LandingPage() {
     '@graph': [
       {
         '@type': 'Organization',
-        '@id': 'https://www.hisbo.in/#organization',
+        '@id': canonicalUrl('/#organization'),
         name: 'Hisbo',
-        url: 'https://www.hisbo.in',
-        logo: 'https://www.hisbo.in/logo-mark.webp',
+        url: SITE_URL,
+        logo: canonicalUrl('/logo-mark.webp'),
         sameAs: [
           'https://www.instagram.com/thevipulshow',
           'https://www.linkedin.com/in/vipul-singh-46792a1a4',
@@ -189,9 +190,9 @@ export default async function LandingPage() {
       },
       {
         '@type': 'WebApplication',
-        '@id': 'https://www.hisbo.in/#webapp',
+        '@id': canonicalUrl('/#webapp'),
         name: 'Hisbo',
-        url: 'https://www.hisbo.in',
+        url: SITE_URL,
         applicationCategory: 'FinanceApplication',
         operatingSystem: 'All',
         offers: {
@@ -208,7 +209,7 @@ export default async function LandingPage() {
     <div className="lp">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
       <Navbar />
 
