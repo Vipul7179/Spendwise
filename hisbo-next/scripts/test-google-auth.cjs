@@ -68,7 +68,7 @@ test('cancellation and missing code never perform code exchange',async()=>{
 });
 test('email forms retain password auth handlers and exclude concurrent OAuth submission',async()=>{
  for(const [path,handler] of [['src/components/auth/LoginForm.tsx','signInWithPassword'],['src/app/(auth)/signup/page.tsx','signUp']]){
-  const fs=require('node:fs');const source=fs.readFileSync(path,'utf8');assert.ok(source.includes('supabase.auth.'+handler+'('));assert.ok(source.includes('disabled={loading || oauthLoading}'));assert.ok(source.includes('if (oauthLoading) return;'));
+  const fs=require('node:fs');const source=fs.readFileSync(path,'utf8');assert.ok(source.includes('supabase.auth.'+handler+'('));assert.ok(source.includes('disabled={loading || oauthLoading'));assert.ok(source.includes('if (oauthLoading) return;'));
  }
  await tick();
 });
@@ -105,4 +105,15 @@ test('signup Google stays available with empty email fields and unchecked email 
  assert.equal(walk(nodes.find(n=>n.type==='form')).some(n=>n.type==='GoogleAuthButton'),false);
  boxes[0].props.onChange({target:{checked:true}});nodes=render();
  assert.equal(nodes.find(n=>n.type==='GoogleAuthButton').props.disabled,false);
+ const submit=()=>render().find(n=>n.type==='button'&&n.props.type==='submit');
+ assert.equal(submit().props.disabled,true);
+ const fill=(id,value)=>render().find(n=>n.props?.id===id).props.onChange({target:{value}});
+ fill('signup-name','Test User');fill('signup-email','test@example.test');fill('signup-password','long-password');
+ assert.equal(submit().props.disabled,false);
+ fill('signup-email','invalid');assert.equal(submit().props.disabled,true);
+ fill('signup-email','test@example.test');fill('signup-password','short');assert.equal(submit().props.disabled,true);
+ fill('signup-password','long-password');fill('signup-name','   ');assert.equal(submit().props.disabled,true);
+ fill('signup-name','Test User');render().find(n=>n.type==='input'&&n.props.type==='checkbox').props.onChange({target:{checked:false}});
+ assert.equal(submit().props.disabled,true);
+ assert.equal(render().find(n=>n.type==='GoogleAuthButton').props.disabled,false);
 });

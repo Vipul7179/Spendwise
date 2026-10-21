@@ -22,6 +22,11 @@ export default function SignUpPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const pwdStrength = calculatePasswordStrength(password);
+  const canCreateAccount = Boolean(name.trim())
+    && /^[\p{L}\s.'-]+$/u.test(name.trim())
+    && /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email.trim())
+    && password.length >= 8
+    && agreeTerms;
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -302,7 +307,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               className="b cta"
-              disabled={loading || oauthLoading}
+              disabled={loading || oauthLoading || !canCreateAccount}
               style={{ width: '100%', marginTop: '6px' }}
             >
               {loading ? (
