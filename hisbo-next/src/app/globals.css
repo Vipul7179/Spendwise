@@ -3858,3 +3858,37 @@ a.bn:focus-visible {
 .analytics-preferences-status { color: var(--mut); }
 .analytics-preferences-inline { margin: 20px 0; padding-top: 12px; border-top: 1px solid var(--line); }
 @media (max-width: 760px) { .analytics-privacy-footer { padding: 16px 20px calc(88px + env(safe-area-inset-bottom)); } }
+
+/* Delayed, out-of-flow feedback for link navigation. */
+.navigation-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 3px;
+  z-index: 10000;
+  pointer-events: none;
+  overflow: hidden;
+  animation: navigation-progress-reveal 120ms ease-out 180ms both;
+}
+.navigation-progress::after {
+  content: '';
+  display: block;
+  width: 35%;
+  height: 100%;
+  background: var(--acc);
+  border-radius: 0 2px 2px 0;
+  animation: navigation-progress-slide 1.2s ease-in-out infinite;
+}
+@keyframes navigation-progress-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes navigation-progress-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .navigation-progress::after {
+    width: 100%;
+    animation: none;
+  }
+}
