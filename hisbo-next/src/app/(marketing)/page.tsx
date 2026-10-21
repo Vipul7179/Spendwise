@@ -14,14 +14,14 @@ import { getPublishedBlogPosts, getBlogCategoriesResult } from '@/lib/blog';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Hisbo — Track spending, stay on budget, save more',
-  description: 'Hisbo brings your expenses, budgets, savings goals and shared bills into one clear, beautiful app.',
+  title: { absolute: 'Hisbo – Free Expense Tracker & Budget Planner' },
+  description: 'Track daily expenses, manage budgets, set savings goals and split bills with friends. Hisbo makes personal finance simple and free.',
   alternates: {
     canonical: canonicalUrl('/'),
   },
   openGraph: {
-    title: 'Hisbo — Track spending, stay on budget, save more',
-    description: 'Hisbo brings your expenses, budgets, savings goals and shared bills into one clear, beautiful app.',
+    title: 'Hisbo – Free Expense Tracker & Budget Planner',
+    description: 'Track daily expenses, manage budgets, set savings goals and split bills with friends. Hisbo makes personal finance simple and free.',
     url: SITE_URL,
     siteName: 'Hisbo',
     images: [
@@ -37,8 +37,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hisbo — Track spending, stay on budget, save more',
-    description: 'Hisbo brings your expenses, budgets, savings goals and shared bills into one clear, beautiful app.',
+    title: 'Hisbo – Free Expense Tracker & Budget Planner',
+    description: 'Track daily expenses, manage budgets, set savings goals and split bills with friends. Hisbo makes personal finance simple and free.',
     images: ['/icon-512.png'],
   },
 };
