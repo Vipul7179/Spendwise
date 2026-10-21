@@ -26,6 +26,8 @@ export const metadata: Metadata = {
     apple: [{ url: '/apple-touch-icon.png' }],
   },
   manifest: '/manifest.json',
+  // Ownership verification only: this metadata does not load advertising code.
+  other: { 'google-adsense-account': 'ca-pub-6490828357850980' },
 };
 
 export const viewport: Viewport = {

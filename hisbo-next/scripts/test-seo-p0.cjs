@@ -88,3 +88,48 @@ test('article metadata and rendered JSON-LD agree on encoded production URL',asy
  assert.equal(html.includes('<script>alert(1)</script>'),false);
  assert.ok(html.includes('<p>Safe article</p>'));
 });
+
+test('AdSense script requires separate advertising consent and remains blog-only', () => {
+  for (const pathname of ['/blog', '/blog/article', '/', '/overview', '/budgets', '/savings', '/login', '/signup', '/blogger']) {
+    for (const advertisingConsent of [false, true]) {
+      const load = runtime({
+        'next/script': { default: 'script' },
+        'next/navigation': { usePathname: () => pathname },
+        'react/jsx-runtime': { jsx: (type, props) => ({ type, props }) },
+      }, { window: { navigator: {} } });
+      const AdSense = load('src/components/blog/AdSenseScript.tsx').default;
+      assert.equal(AdSense({}), null, 'Verification alone never opts a visitor into advertising');
+      const tree = AdSense({ advertisingConsent });
+      const permitted = advertisingConsent && (pathname === '/blog' || pathname.startsWith('/blog/'));
+      if (!permitted) { assert.equal(tree, null); continue; }
+      assert.equal(tree.props.id, 'hisbo-adsense');
+      assert.equal(tree.props.src, 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6490828357850980');
+      assert.equal(tree.props.crossOrigin, 'anonymous');
+      assert.equal(tree.props.async, true);
+      assert.equal(tree.props.strategy, 'afterInteractive');
+    }
+  }
+});
+
+test('AdSense does not override browser privacy opt-outs', () => {
+  for (const navigator of [{ globalPrivacyControl: true }, { doNotTrack: '1' }, { doNotTrack: 'yes' }]) {
+    const load = runtime({
+      'next/script': {}, 'next/navigation': { usePathname: () => '/blog' },
+    }, { window: { navigator } });
+    assert.equal(load('src/components/blog/AdSenseScript.tsx').default({ advertisingConsent: true }), null);
+  }
+});
+
+test('root AdSense verification metadata preserves existing site metadata and providers', () => {
+  const layout = runtime({
+    'next/font/google': { Bricolage_Grotesque: () => ({ variable: 'font' }) },
+    './globals.css': {},
+    '@/components/common/LegacyHashHandler': {},
+    '@/components/common/NavigationFeedback': {},
+    '@/components/common/AnalyticsProvider': {},
+  })('src/app/layout.tsx');
+  assert.equal(layout.metadata.other['google-adsense-account'], 'ca-pub-6490828357850980');
+  assert.equal(layout.metadata.metadataBase.href, 'https://www.hisbo.in/');
+  assert.equal(layout.metadata.manifest, '/manifest.json');
+  assert.ok(layout.metadata.title.default.includes('Hisbo'));
+});
