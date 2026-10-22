@@ -1,0 +1,9 @@
+# Root-level ignore safeguards
+.env*.local
+.env
+*.pem
+*.key
+*service-account*.json
+*credentials*.json
+.DS_Store
+
