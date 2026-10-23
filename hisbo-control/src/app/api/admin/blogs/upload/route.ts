@@ -3,16 +3,23 @@ import { verifyRealAdminSession } from '@/lib/auth/admin-guard';
 import { createClient } from '@supabase/supabase-js';
 import { randomBytes } from 'crypto';
 import { logAuthEvent } from '@/lib/auth/audit';
-import { validateImageBuffer, MAX_IMAGE_SIZE_BYTES } from '@/lib/storage/image-validator';
+import { validateImageBuffer } from '@/lib/storage/image-validator';
 
 export const dynamic = 'force-dynamic';
+
+// 3 MB file size limit enforced by the production 'blog' bucket
+const MAX_BLOG_IMAGE_SIZE_BYTES = 3 * 1024 * 1024;
 
 /**
  * Administrative API: Secure Blog Cover Image Upload to Supabase Storage
  *
- * Stores blog cover images under the `blog-covers/` folder in the production `banners` bucket.
- * This reuses the existing public storage infrastructure without requiring database migrations
- * or new bucket provisioning.
+ * Targets the verified public 'blog' bucket (3 MB max) on the Spendwise
+ * production Supabase project (omnhxlqykmtzxdagppcl).
+ *
+ * Requirements:
+ * 1. Authenticated administrator session verified on staging auth.
+ * 2. Upload routed to production via PROD_SUPABASE_URL and PROD_SUPABASE_SERVICE_KEY.
+ * 3. Never falls back to staging authentication project for storage writes.
  */
 export async function POST(request: Request) {
   // 1. Verify authenticated administrator session
@@ -34,12 +41,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'A valid image file is required.' }, { status: 400 });
   }
 
-  // 3. File size check
-  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+  // 3. File size check against 3 MB bucket limit
+  if (file.size > MAX_BLOG_IMAGE_SIZE_BYTES) {
     return NextResponse.json(
       {
         success: false,
-        error: `File size exceeds the 5 MB limit (received ${(file.size / 1024 / 1024).toFixed(2)} MB).`,
+        error: `File size exceeds the 3 MB limit for the blog bucket (received ${(file.size / 1024 / 1024).toFixed(2)} MB).`,
       },
       { status: 400 }
     );
@@ -49,22 +56,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'File cannot be empty.' }, { status: 400 });
   }
 
-  // 4. Validate magic bytes
+  // 4. Validate magic bytes (JPEG, PNG, WebP, AVIF) & reject SVG
   const fileBuffer = Buffer.from(await file.arrayBuffer());
   const validation = validateImageBuffer(fileBuffer, file.type);
   if (!validation.valid || !validation.extension) {
     return NextResponse.json({ success: false, error: validation.error || 'Invalid image format.' }, { status: 400 });
   }
 
-  // 5. Initialize server-side Supabase Storage client
-  const targetUrl = process.env.PROD_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const targetServiceKey = process.env.PROD_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // 5. Initialize server-side Supabase Storage client for PRODUCTION
+  const targetUrl = process.env.PROD_SUPABASE_URL;
+  const targetServiceKey = process.env.PROD_SUPABASE_SERVICE_KEY;
 
   if (!targetUrl || !targetServiceKey) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Supabase Storage credentials are not configured in hisbo-control/.env.local.',
+        error: 'Production Supabase Storage credentials (PROD_SUPABASE_URL and PROD_SUPABASE_SERVICE_KEY) are not configured in hisbo-control/.env.local.',
       },
       { status: 503 }
     );
@@ -74,9 +81,9 @@ export async function POST(request: Request) {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  // 6. Generate sanitized destination path in `blog-covers/` subfolder
-  const safeFilename = `blog-covers/blog_${Date.now()}_${randomBytes(4).toString('hex')}.${validation.extension}`;
-  const bucketName = 'banners';
+  // 6. Generate sanitized destination path in production 'blog' bucket
+  const safeFilename = `blog_${Date.now()}_${randomBytes(4).toString('hex')}.${validation.extension}`;
+  const bucketName = 'blog';
 
   try {
     const { error: uploadError } = await storageClient.storage
@@ -91,7 +98,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             success: false,
-            error: 'Storage bucket "banners" does not exist in the configured Supabase project.',
+            error: 'Storage bucket "blog" does not exist in the configured Supabase project.',
           },
           { status: 502 }
         );
@@ -121,4 +128,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: msg }, { status: 500 });
   }
 }
-

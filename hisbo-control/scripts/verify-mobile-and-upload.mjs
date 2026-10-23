@@ -212,8 +212,8 @@ const blogUploadRoute = fs.readFileSync(blogUploadRoutePath, 'utf8');
 runTest('Blog upload API verifies real admin session and uses magic bytes validator', () => {
   assert.ok(blogUploadRoute.includes('verifyRealAdminSession'), 'Must verify admin session');
   assert.ok(blogUploadRoute.includes('validateImageBuffer'), 'Must validate magic bytes');
-  assert.ok(blogUploadRoute.includes('blog-covers/'), 'Must store under blog-covers subfolder');
-  assert.ok(blogUploadRoute.includes("bucketName = 'banners'"), 'Must target production banners bucket');
+  assert.ok(blogUploadRoute.includes("bucketName = 'blog'"), 'Must target production blog bucket');
+  assert.ok(blogUploadRoute.includes('process.env.PROD_SUPABASE_URL'), 'Must use PROD_SUPABASE_URL');
 });
 
 const bannerUploadRoutePath = path.join(controlRoot, 'src', 'app', 'api', 'admin', 'banners', 'upload', 'route.ts');

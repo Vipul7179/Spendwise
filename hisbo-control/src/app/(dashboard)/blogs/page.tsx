@@ -676,7 +676,8 @@ export default function BlogManagementPage() {
                 onChange={(url) => setFormCoverImage(url)}
                 uploadEndpoint="/api/admin/blogs/upload"
                 aspectRatio="blog"
-                helperText="Recommended: 1200x630 WebP, PNG, JPG, or AVIF (max 5 MB)."
+                maxSizeMb={3}
+                helperText="Recommended: 1200x630 WebP, PNG, JPG, or AVIF (max 3 MB)."
               />
 
               <div>
