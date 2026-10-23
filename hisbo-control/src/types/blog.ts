@@ -6,7 +6,7 @@ export interface BlogCategory {
   id: string;
   name: string;
   slug: string;
-  description: string | null;
+  description?: string | null;
   sort_order?: number;
   created_at?: string;
 }
@@ -26,14 +26,18 @@ export interface BlogPost {
   updated_at?: string;
   author_name?: string | null;
   author?: string;
+  author_position?: string | null;
   readTimeMinutes?: number;
+  reading_minutes?: number;
   viewsCount?: number;
   tags?: string[];
+  is_featured?: boolean;
+  is_scheduled?: boolean;
   cover_image_url?: string | null;
+  cover_image_path?: string | null;
   cover_alt?: string | null;
   seo_title?: string | null;
   seo_description?: string | null;
   og_image_url?: string | null;
   noindex?: boolean;
 }
-

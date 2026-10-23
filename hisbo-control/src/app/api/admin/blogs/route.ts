@@ -76,9 +76,14 @@ export async function POST(request: Request) {
       category_id: body.category_id,
       status: body.status || 'draft',
       author_name: body.author_name || auth.user?.name || 'Administrator',
+      author_position: body.author_position || null,
+      tags: Array.isArray(body.tags) ? body.tags : [],
+      is_featured: Boolean(body.is_featured),
       cover_image_url: body.cover_image_url,
+      cover_alt: body.cover_alt,
       seo_title: body.seo_title,
       seo_description: body.seo_description,
+      published_at: body.published_at,
     });
 
     if (res.error || !res.post) {
