@@ -318,7 +318,7 @@ export default function OverviewDashboardPage() {
       )}
 
       {/* 4 Primary KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1.25rem' }}>
         <StatCard
           title="Total Registered Customers"
           value={isLoading ? '...' : metrics ? (metrics.totalUsers ?? 0).toLocaleString() : '—'}
@@ -368,7 +368,7 @@ export default function OverviewDashboardPage() {
       </div>
 
       {/* Charts Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))', gap: '1.5rem' }}>
         <ChartCard
           title="Customer Growth Trajectory"
           subtitle={metrics ? `Real cumulative customers in ${dataSource}` : 'Awaiting Production Reporting'}
@@ -420,7 +420,7 @@ export default function OverviewDashboardPage() {
       </div>
 
       {/* Secondary Row: Integration Telemetry Status */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '1.5rem' }}>
         {/* Acquisition Channels (External Telemetry Notice) */}
         <div className="admin-card">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>

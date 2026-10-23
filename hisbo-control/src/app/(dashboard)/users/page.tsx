@@ -577,27 +577,12 @@ export default function UserManagementPage() {
 
       {/* User Detail Drawer Modal */}
       {selectedUser && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.7)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '1rem',
-          }}
-          onClick={() => setSelectedUser(null)}
-        >
+        <div className="modal-overlay" onClick={() => setSelectedUser(null)}>
           <div
-            className="admin-card"
+            className="modal-content admin-card"
             style={{
               maxWidth: 520,
-              width: '100%',
               padding: '1.75rem',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
             }}
             onClick={(e) => e.stopPropagation()}
           >

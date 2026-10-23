@@ -59,6 +59,8 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-main);
   min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -86,6 +88,9 @@ a {
 .admin-shell {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  position: relative;
 }
 
 .admin-sidebar {
@@ -110,16 +115,19 @@ a {
 }
 
 .admin-topbar {
-  height: var(--topbar-height);
+  height: calc(var(--topbar-height) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.5rem;
   position: sticky;
   top: 0;
   z-index: 30;
+  backdrop-filter: blur(8px);
 }
 
 .admin-content {
@@ -137,6 +145,16 @@ a {
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-card {
+  padding: 2.25rem;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1.25rem 1rem !important;
+  }
 }
 
 .admin-card:hover {
@@ -157,6 +175,7 @@ a {
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  min-height: 38px;
 }
 
 .btn-primary {
@@ -192,6 +211,7 @@ a {
 .btn-sm {
   padding: 0.35rem 0.75rem;
   font-size: 0.8125rem;
+  min-height: 34px;
 }
 
 /* Form Controls */
@@ -275,6 +295,7 @@ a {
 .admin-table-container {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--bg-card);
@@ -285,6 +306,7 @@ a {
   border-collapse: collapse;
   text-align: left;
   font-size: 0.875rem;
+  min-width: 580px;
 }
 
 .admin-table th {
@@ -296,6 +318,7 @@ a {
   letter-spacing: 0.05em;
   padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .admin-table td {
@@ -312,17 +335,19 @@ a {
   background: var(--bg-card-hover);
 }
 
-/* Modal Overlay */
+/* Modal Overlay & Responsive Dialogs */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
+  z-index: 100;
   padding: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-content {
@@ -332,27 +357,301 @@ a {
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
 }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  :root {
-    --sidebar-width: 220px;
+/* Mobile Drawer Backdrop */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(3px);
+  z-index: 45;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.sidebar-close-btn:hover {
+  color: var(--text-main);
+  background: var(--bg-card-hover);
+}
+
+.admin-hamburger-btn {
+  display: none;
+}
+
+.topbar-icon-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  transition: background-color 0.15s ease;
+}
+
+.topbar-icon-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+}
+
+.topbar-db-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* Responsive Grid Helpers */
+.grid-kpi-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.grid-cols-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+/* =========================================================================
+   RESPONSIVE BREAKPOINTS (Mobile-First / Adaptive)
+   ========================================================================= */
+
+/* Desktop view (>= 1024px) */
+@media (min-width: 1024px) {
+  .admin-hamburger-btn {
+    display: none !important;
+  }
+  .sidebar-close-btn {
+    display: none !important;
+  }
+  .sidebar-backdrop {
+    display: none !important;
+  }
+  .admin-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    transform: none !important;
+    transition: none !important;
   }
 }
 
-@media (max-width: 768px) {
+/* Tablet & Mobile (< 1024px) */
+@media (max-width: 1023px) {
+  :root {
+    --sidebar-width: 280px;
+  }
+
+  .admin-shell {
+    position: relative;
+  }
+
   .admin-sidebar {
     position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100%;
+    height: 100dvh;
+    width: min(320px, 86vw);
+    z-index: 50;
     transform: translateX(-100%);
-    transition: transform 0.25s ease-in-out;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease;
+    box-shadow: none;
   }
+
   .admin-sidebar.open {
     transform: translateX(0);
+    box-shadow: 12px 0 35px rgba(0, 0, 0, 0.6);
   }
+
+  .sidebar-close-btn {
+    display: flex;
+  }
+
+  .admin-hamburger-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    border-radius: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .admin-hamburger-btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-light);
+  }
+
   .admin-content {
+    padding: 1.5rem 1.25rem 3rem 1.25rem;
+  }
+
+  .grid-kpi-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Standard Mobile & Small Tablet (< 768px) */
+@media (max-width: 768px) {
+  .topbar-db-badge {
+    display: none;
+  }
+
+  .admin-topbar {
+    padding: 0 1rem;
+  }
+
+  .admin-content {
+    padding: 1.25rem 1rem 3rem 1rem;
+  }
+}
+
+/* Small to Standard Mobile (< 640px) */
+@media (max-width: 640px) {
+  /* Prevent iOS automatic input zoom */
+  .input-field,
+  select,
+  textarea,
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='url'],
+  input[type='number'],
+  input[type='search'] {
+    font-size: 16px !important;
+  }
+
+  /* Mobile Bottom Sheet Modals */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    width: 100%;
+    max-height: 90vh;
+    max-height: 90dvh;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
     padding: 1.25rem 1rem;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem));
+    animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Buttons on mobile - meet 44px min tap targets */
+  .btn {
+    min-height: 44px;
+    padding: 0.6rem 1rem;
+  }
+
+  .btn-sm {
+    min-height: 40px;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .grid-kpi-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Extra Small Mobile (320px–430px) */
+@media (max-width: 480px) {
+  .admin-topbar {
+    padding: 0 0.75rem;
+    height: 58px;
+  }
+
+  .topbar-status-text {
+    display: none;
+  }
+
+  .topbar-action-label {
+    display: none;
+  }
+
+  .topbar-action-btn {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0.45rem !important;
+  }
+
+  .admin-content {
+    padding: 1rem 0.75rem 2.5rem 0.75rem;
+  }
+
+  .admin-card {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

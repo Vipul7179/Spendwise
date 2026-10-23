@@ -13,6 +13,7 @@ import {
   ShieldIcon,
 } from '@/components/icons';
 import { BannerItem } from '@/types/banner';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 
 export default function BannerManagementPage() {
   const [banners, setBanners] = useState<BannerItem[]>([]);
@@ -32,40 +33,6 @@ export default function BannerManagementPage() {
   const [formOrder, setFormOrder] = useState('0');
   const [formActive, setFormActive] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('Image file exceeds 5 MB limit.');
-      return;
-    }
-
-    setIsUploadingImage(true);
-    const fd = new FormData();
-    fd.append('file', file);
-
-    try {
-      const res = await fetch('/api/admin/banners/upload', {
-        method: 'POST',
-        body: fd,
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to upload image');
-      }
-      setFormImageUrl(data.publicUrl);
-      setFormImagePath(data.imagePath);
-      showToast('Banner image uploaded to Supabase Storage!');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Upload failed';
-      showToast(`Upload error: ${msg}`);
-    } finally {
-      setIsUploadingImage(false);
-    }
-  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -448,7 +415,7 @@ export default function BannerManagementPage() {
               }}
             >
               {/* Left thumbnail and info */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 280, flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 'min(100%, 240px)', flex: 1, flexWrap: 'wrap' }}>
                 <div
                   style={{
                     width: 100,
@@ -511,7 +478,7 @@ export default function BannerManagementPage() {
               </div>
 
               {/* Right actions */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => handleMoveOrder(index, 'up')}
                   disabled={index === 0}
@@ -554,23 +521,10 @@ export default function BannerManagementPage() {
 
       {/* Create / Edit Modal */}
       {isModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.7)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '1rem',
-          }}
-          onClick={() => setIsModalOpen(false)}
-        >
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div
-            className="admin-card"
-            style={{ maxWidth: 520, width: '100%', padding: '1.75rem' }}
+            className="modal-content admin-card"
+            style={{ maxWidth: 520, padding: '1.75rem' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
@@ -625,46 +579,15 @@ export default function BannerManagementPage() {
                 />
               </div>
 
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                  <label style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                    Image Public URL <span style={{ color: 'var(--accent)' }}>*</span>
-                  </label>
-                  <label
-                    style={{
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      color: 'var(--accent)',
-                      cursor: isUploadingImage ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    {isUploadingImage ? 'Uploading to Storage...' : '📁 Upload Image File'}
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/gif"
-                      onChange={handleFileUpload}
-                      disabled={isUploadingImage}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                </div>
-                <input
-                  type="url"
-                  value={formImageUrl}
-                  onChange={(e) => setFormImageUrl(e.target.value)}
-                  placeholder="https://...supabase.co/storage/v1/object/public/banners/promo.webp"
-                  className="input-field"
-                  required
-                />
-              </div>
-
-              {/* Preview */}
-              {formImageUrl && (
-                <div style={{ borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)', maxHeight: 120 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={formImageUrl} alt="Preview" style={{ width: '100%', height: 120, objectFit: 'cover' }} />
-                </div>
-              )}
+              <ImageUploader
+                label="Banner Image"
+                value={formImageUrl}
+                onChange={(url) => setFormImageUrl(url)}
+                uploadEndpoint="/api/admin/banners/upload"
+                aspectRatio="banner"
+                required
+                helperText="Upload image or enter URL. Supports JPEG, PNG, WebP, AVIF (max 5 MB)."
+              />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>

@@ -234,7 +234,7 @@ export default function ActivityLogsPage() {
 
       {/* Search and Category Filter */}
       <div className="admin-card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: 260 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: 'min(100%, 240px)' }}>
           <SearchIcon size={18} style={{ color: 'var(--text-muted)' }} />
           <input
             type="text"
