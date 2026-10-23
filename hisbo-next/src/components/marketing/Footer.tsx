@@ -1,10 +1,25 @@
 import Link from 'next/link';
+import Image from '@/components/common/SkeletonImage';
 
 export default function Footer() {
   return (
-    <footer className="lft">
-      Made with care by <b>Vipul Singh</b>
-      <div style={{ margin: '8px 0' }}>
+    <footer className="lft" role="contentinfo" aria-label="Site footer">
+      <div className="footer-brand-wrap">
+        <Link className="abrand" href="/" aria-label="Hisbo home">
+          <span className="tlogo">
+            <Image
+              src="/logo-mark.webp"
+              alt="Hisbo logo"
+              width={32}
+              height={32}
+              className="lgi"
+            />
+          </span>
+          <span className="abrand-text">Hisbo</span>
+        </Link>
+      </div>
+
+      <div className="footer-links-row">
         <a href="https://www.instagram.com/thevipulshow" target="_blank" rel="noopener noreferrer">
           Instagram
         </a>
@@ -21,8 +36,12 @@ export default function Footer() {
           Contact support
         </a>
       </div>
-      &copy; 2026 Hisbo
+
+      <div className="footer-copy-row">
+        <span>Made with care by <b>Vipul Singh</b></span>
+        <span className="footer-copy-sep">&bull;</span>
+        <span>&copy; 2026 Hisbo</span>
+      </div>
     </footer>
   );
 }
-
