@@ -2,9 +2,12 @@ import { canonicalUrl, SITE_URL, serializeJsonLd } from '@/lib/seo';
 import type { Metadata } from 'next';
 import './landing-reference.css';
 import Link from 'next/link';
+import Image from '@/components/common/SkeletonImage';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
-import InteractivePreview from '@/components/marketing/InteractivePreview';
+import HeroDeviceMockup from '@/components/marketing/HeroDeviceMockup';
+import ExpenseCalculator from '@/components/marketing/ExpenseCalculator';
+import TestimonialCarousel from '@/components/marketing/TestimonialCarousel';
 import GuestEntryButton from '@/components/auth/GuestEntryButton';
 import BlogCard from '@/components/blog/BlogCard';
 import BlogEmptyState from '@/components/blog/BlogEmptyState';
@@ -15,13 +18,15 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: { absolute: 'Hisbo – Free Expense Tracker & Budget Planner' },
-  description: 'Track daily expenses, manage budgets, set savings goals and split bills with friends. Hisbo makes personal finance simple and free.',
+  description:
+    'Track daily expenses, manage budgets, set savings goals and split bills with friends. Hisbo makes personal finance simple and free.',
   alternates: {
     canonical: canonicalUrl('/'),
   },
   openGraph: {
     title: 'Hisbo – Free Expense Tracker & Budget Planner',
-    description: 'Track daily expenses, manage budgets, set savings goals and split bills with friends. Hisbo makes personal finance simple and free.',
+    description:
+      'Track daily expenses, manage budgets, set savings goals and split bills with friends. Hisbo makes personal finance simple and free.',
     url: SITE_URL,
     siteName: 'Hisbo',
     images: [
@@ -38,7 +43,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Hisbo – Free Expense Tracker & Budget Planner',
-    description: 'Track daily expenses, manage budgets, set savings goals and split bills with friends. Hisbo makes personal finance simple and free.',
+    description:
+      'Track daily expenses, manage budgets, set savings goals and split bills with friends. Hisbo makes personal finance simple and free.',
     images: ['/icon-512.png'],
   },
 };
@@ -48,86 +54,107 @@ const FEATURES = [
     title: 'Track every expense',
     desc: 'Log a spend in seconds, sort it into categories and see exactly where your money goes.',
     color: '#0f7a58',
+    bg: 'linear-gradient(135deg, rgba(15, 122, 88, 0.22), rgba(39, 192, 138, 0.12))',
     icon: (
-      <>
-        <path d="M21.2 15.9A10 10 0 1 1 8 2.8" />
-        <path d="M22 12A10 10 0 0 0 12 2v10z" />
-      </>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+        <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+        <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
+      </svg>
     ),
   },
   {
     title: 'Budgets with smart alerts',
     desc: 'Set a monthly limit for each category and get a heads-up at 50%, 80% and 100% of it.',
-    color: '#14a37f',
+    color: '#e29a00',
+    bg: 'linear-gradient(135deg, rgba(226, 154, 0, 0.22), rgba(245, 179, 1, 0.12))',
     icon: (
-      <>
-        <circle cx="12" cy="12" r="10" />
-        <circle cx="12" cy="12" r="6" />
-        <circle cx="12" cy="12" r="2" />
-      </>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      </svg>
     ),
   },
   {
     title: 'Charts you can understand',
     desc: 'Switch between donut, pie, bars and a day-by-day view. Tap a day to see just that day.',
-    color: '#e29a00',
+    color: '#2f8cff',
+    bg: 'linear-gradient(135deg, rgba(47, 140, 255, 0.22), rgba(34, 211, 238, 0.12))',
     icon: (
-      <>
-        <path d="M3 3v18h18" />
-        <path d="M7 14l4-4 3 3 5-6" />
-      </>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10" />
+        <line x1="12" y1="20" x2="12" y2="4" />
+        <line x1="6" y1="20" x2="6" y2="14" />
+      </svg>
     ),
   },
   {
     title: 'Savings goals',
     desc: 'Set a target, add to it as you go and celebrate every milestone on the way.',
     color: '#e0529c',
+    bg: 'linear-gradient(135deg, rgba(224, 82, 156, 0.22), rgba(244, 114, 182, 0.12))',
     icon: (
-      <>
-        <path d="m22 7-8.5 8.5-5-5L2 17" />
-        <path d="M16 7h6v6" />
-      </>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <circle cx="12" cy="12" r="6" />
+        <circle cx="12" cy="12" r="2" />
+      </svg>
     ),
   },
   {
     title: 'Split bills with friends',
     desc: 'Create a group for your flat or trip, see who owes whom and send reminders on WhatsApp.',
-    color: '#2f8cff',
+    color: '#0284c7',
+    bg: 'linear-gradient(135deg, rgba(2, 132, 199, 0.22), rgba(56, 189, 248, 0.12))',
     icon: (
-      <>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </>
+      </svg>
     ),
   },
   {
     title: 'Automate the boring parts',
-    desc: 'Add recurring expenses like rent, or paste bank SMS messages to import spending in one go.',
-    color: '#8a5cf6',
-    icon: <path d="M13 2 3 14h9l-1 8 10-12h-9z" />,
+    desc: 'Add recurring expenses like rent, subscriptions or EMIs. Hisbo reminds you so nothing is missed.',
+    color: '#14a37f',
+    bg: 'linear-gradient(135deg, rgba(20, 163, 127, 0.22), rgba(63, 217, 160, 0.12))',
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+      </svg>
+    ),
   },
   {
     title: 'Private by design',
     desc: 'Your data syncs to your own account, is never sold, and you can hide every amount with one tap.',
-    color: '#19b394',
+    color: '#0d9488',
+    bg: 'linear-gradient(135deg, rgba(13, 148, 136, 0.22), rgba(45, 212, 191, 0.12))',
     icon: (
-      <>
-        <rect x="3" y="11" width="18" height="11" rx="2" />
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-      </>
+      </svg>
     ),
   },
   {
     title: 'Light, dark, any device',
     desc: 'Works on your phone and your computer, in light or dark mode, with a clean modern design.',
-    color: '#ff6b5b',
+    color: '#f97316',
+    bg: 'linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(251, 146, 60, 0.12))',
     icon: (
-      <>
-        <circle cx="12" cy="12" r="4" />
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-      </>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="5" />
+        <line x1="12" y1="1" x2="12" y2="3" />
+        <line x1="12" y1="21" x2="12" y2="23" />
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+        <line x1="1" y1="12" x2="3" y2="12" />
+        <line x1="21" y1="12" x2="23" y2="12" />
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+      </svg>
     ),
   },
 ];
@@ -169,7 +196,8 @@ const FAQS = [
 
 export default async function LandingPage() {
   const [{ posts, error: postError }, { categories, error: categoryError }] = await Promise.all([
-    getPublishedBlogPosts({ limit: 3 }), getBlogCategoriesResult(),
+    getPublishedBlogPosts({ limit: 3 }),
+    getBlogCategoriesResult(),
   ]);
   const blogError = postError || categoryError;
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
@@ -201,7 +229,8 @@ export default async function LandingPage() {
           price: '0',
           priceCurrency: 'INR',
         },
-        description: 'Personal finance made simple. Track spending, stay on budget, and save more.',
+        description:
+          'Personal finance made simple. Track spending, stay on budget, and save more.',
       },
     ],
   };
@@ -215,11 +244,9 @@ export default async function LandingPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="lhr">
-        <i className="bl b1" />
-        <i className="bl b2" />
+      <section className="lhr" aria-labelledby="hero-title">
         <div className="eb">Personal finance made simple</div>
-        <h1>
+        <h1 id="hero-title">
           Track spending, stay on budget, <span className="gt">save more.</span>
         </h1>
         <p className="sub">
@@ -227,16 +254,29 @@ export default async function LandingPage() {
           beautiful app.
         </p>
 
-        <div className="lcta" style={{ justifyContent: 'center' }}>
+        <div className="lcta">
           <Link className="lbtn p big" href="/signup">
-            Sign up free
+            <span>Sign up free</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
           </Link>
           <GuestEntryButton className="lbtn ol big">
             Try without an account
           </GuestEntryButton>
         </div>
 
-        <div className="ltrust" style={{ justifyContent: 'center' }}>
+        <div className="ltrust">
           <span>&#10003; Free to start</span>
           <span>&#10003; Syncs across devices</span>
           <span>&#10003; Your data is never sold</span>
@@ -246,36 +286,33 @@ export default async function LandingPage() {
           No account needed to try it. In guest mode your data stays only on your device.
         </p>
 
-        <InteractivePreview />
+        {/* Hero Realistic Device Composition */}
+        <HeroDeviceMockup />
       </section>
 
       {/* Features Section */}
-      <section className="lsec" id="features">
-        <h2>Everything you need, nothing you don&apos;t</h2>
+      <section className="lsec" id="features" aria-labelledby="features-heading">
+        <h2 id="features-heading">Everything you need, nothing you don&apos;t</h2>
         <p>Simple tools that make managing money feel easy.</p>
         <div className="fg">
           {FEATURES.map((f) => (
             <div key={f.title} className="fcard">
-              <div
-                className="fic"
-                style={{
-                  background: `color-mix(in srgb, ${f.color} 14%, transparent)`,
-                  color: f.color,
-                }}
-              >
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+              <div className="fcard-header-row">
+                <div
+                  className="fic-3d"
+                  style={{
+                    background: f.bg,
+                    color: f.color,
+                  }}
                 >
                   {f.icon}
-                </svg>
+                </div>
+                <span className="fcard-arrow" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="7" y1="17" x2="17" y2="7" />
+                    <polyline points="7 7 17 7 17 17" />
+                  </svg>
+                </span>
               </div>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
@@ -284,39 +321,74 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* How it works Section */}
-      <section className="lsec" id="how">
-        <h2>Up and running in three steps</h2>
+      {/* Interactive Expense Calculator */}
+      <ExpenseCalculator />
+
+      {/* How it works Section: Cohesive Step Number & Icon Grouping */}
+      <section className="lsec" id="how" aria-labelledby="how-heading">
+        <h2 id="how-heading">Up and running in three steps</h2>
         <p>No setup headaches. Start tracking in under two minutes.</p>
-        <div className="steps">
+        <div className="steps-container">
           {[
             {
+              step: '1',
               title: 'Create your account',
-              desc: 'Sign up free in seconds, or try Hisbo without an account first.',
+              desc: 'Sign up in a few seconds, or try Hisbo without an account first.',
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" />
+                </svg>
+              ),
             },
             {
+              step: '2',
               title: 'Add your spending',
               desc: 'Log expenses, set category budgets and create a savings goal.',
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+                  <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+                  <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
+                </svg>
+              ),
             },
             {
+              step: '3',
               title: 'Watch it all add up',
-              desc: 'See charts, get alerts and keep your friends square on shared bills.',
+              desc: 'See charts, get alerts and keep your friends in sync on shared bills.',
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+              ),
             },
-          ].map((s, i) => (
-            <div key={s.title} className="stp">
-              <b className="n">{i + 1}</b>
-              <h3 style={{ margin: '0 0 4px' }}>{s.title}</h3>
-              <p style={{ margin: 0, color: 'var(--mut)', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                {s.desc}
-              </p>
+          ].map((s) => (
+            <div key={s.title} className="step-card">
+              {/* Cohesive Header Group: Balanced Step Badge + Progression Arrow + Unified Icon Box */}
+              <div className="step-header-row">
+                <span className="step-number-badge">{s.step}</span>
+                <span className="step-progression-arrow" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+                <div className="step-illustration-box" aria-hidden="true">
+                  {s.icon}
+                </div>
+              </div>
+              <h3>{s.title}</h3>
+              <p>{s.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Guest vs Account Section */}
-      <section className="lsec" id="guest">
-        <h2>Try Hisbo without an account</h2>
+      <section className="lsec" id="guest" aria-labelledby="guest-heading">
+        <h2 id="guest-heading">Try Hisbo without an account</h2>
         <p>Start right away, and create an account whenever you are ready.</p>
         <div className="gcmp">
           <div className="gc">
@@ -333,6 +405,7 @@ export default async function LandingPage() {
           </div>
 
           <div className="gc hl">
+            <span className="gc-pill-badge">Recommended</span>
             <h3>With a free account</h3>
             <ul>
               <li className="y">Data saved securely to your account</li>
@@ -341,49 +414,25 @@ export default async function LandingPage() {
               <li className="y">Your data is never sold</li>
             </ul>
             <Link className="lbtn p" href="/signup">
-              Sign up free
+              <span>Sign up free</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="lsec" id="faq">
-        <h2>Frequently asked questions</h2>
-        <p>Quick answers about how Hisbo works.</p>
-        <div className="faq">
-          {FAQS.map((q) => (
-            <details key={q.q}>
-              <summary>
-                {q.q}
-                <span className="pl">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                </span>
-              </summary>
-              <div className="ans">{q.a}</div>
-            </details>
-          ))}
-        </div>
-      </section>
+      {/* Testimonials Carousel Section */}
+      <TestimonialCarousel />
 
       {/* Journal / From the blog Section */}
-      <section className="lsec journal" id="journal">
+      <section className="lsec journal" id="journal" aria-labelledby="journal-heading">
         <div className="journal-head">
           <div>
             <span className="journal-kicker">From the blog</span>
-            <h2>
-              Guides &amp; tips for <span>your money life</span>
+            <h2 id="journal-heading">
+              Guides &amp; tips for <span className="gt">your money life</span>
             </h2>
             <p>
               Practical advice to help you build better money habits and feel more confident with
@@ -392,7 +441,8 @@ export default async function LandingPage() {
           </div>
           {posts.length > 0 && (
             <Link className="journal-link" href="/blog">
-              View all articles <span aria-hidden="true">&rarr;</span>
+              <span>View all articles</span>
+              <span aria-hidden="true">&rarr;</span>
             </Link>
           )}
         </div>
@@ -415,19 +465,75 @@ export default async function LandingPage() {
         )}
       </section>
 
-      {/* Final CTA Section */}
-      <section className="lfin">
-        <i className="bl b1" />
-        <div style={{ position: 'relative' }}>
-          <h2>Ready to take control of your money?</h2>
-          <p>Join Hisbo for free and make every rupee count.</p>
-          <div className="lcta" style={{ justifyContent: 'center' }}>
-            <Link className="lbtn w" href="/signup">
-              Sign up free
-            </Link>
-            <Link className="lbtn o" href="/login">
-              I already have an account
-            </Link>
+      {/* FAQ Section */}
+      <section className="lsec" id="faq" aria-labelledby="faq-heading">
+        <h2 id="faq-heading">Frequently asked questions</h2>
+        <p>Quick answers about how Hisbo works.</p>
+        <div className="faq">
+          {FAQS.map((q) => (
+            <details key={q.q}>
+              <summary>
+                <span>{q.q}</span>
+                <span className="pl" aria-hidden="true">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.6"
+                    strokeLinecap="round"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </span>
+              </summary>
+              <div className="ans">{q.a}</div>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      {/* Final CTA Section with Official Logo */}
+      <section className="lfin" aria-labelledby="final-cta-heading">
+        <div className="final-cta-content-grid">
+          <div className="final-cta-text-panel">
+            <h2 id="final-cta-heading">Start your smarter money journey today</h2>
+            <p>
+              Join thousands who are already tracking, saving and reaching their goals with Hisbo.
+            </p>
+            <div className="lcta">
+              <Link className="lbtn w big" href="/signup">
+                <span>Sign up free</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </Link>
+              <GuestEntryButton className="lbtn o big">
+                Try without an account
+              </GuestEntryButton>
+            </div>
+          </div>
+
+          <div className="final-cta-mockup-panel">
+            <div className="final-cta-device-card" aria-hidden="true">
+              <div className="final-mini-phone">
+                <div className="final-mini-phone-logo">
+                  <Image
+                    src="/logo-mark.webp"
+                    alt="Hisbo"
+                    width={40}
+                    height={40}
+                    className="lgi"
+                  />
+                </div>
+                <span className="label-hisbo">Hisbo</span>
+              </div>
+              <div className="final-handwritten-note">
+                Manage today for a brighter tomorrow ~
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -436,4 +542,3 @@ export default async function LandingPage() {
     </div>
   );
 }
-
