@@ -14,6 +14,7 @@ import {
   ShieldIcon,
 } from '@/components/icons';
 import { BlogPost, BlogCategory } from '@/types/blog';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 
 export default function BlogManagementPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -669,18 +670,14 @@ export default function BlogManagementPage() {
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                  Cover Image URL
-                </label>
-                <input
-                  type="url"
-                  value={formCoverImage}
-                  onChange={(e) => setFormCoverImage(e.target.value)}
-                  placeholder="https://.../cover.webp"
-                  className="input-field"
-                />
-              </div>
+              <ImageUploader
+                label="Cover Image"
+                value={formCoverImage}
+                onChange={(url) => setFormCoverImage(url)}
+                uploadEndpoint="/api/admin/blogs/upload"
+                aspectRatio="blog"
+                helperText="Recommended: 1200x630 WebP, PNG, JPG, or AVIF (max 5 MB)."
+              />
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>

@@ -15,6 +15,7 @@ import {
   SettingsIcon,
   LogOutIcon,
   ExternalLinkIcon,
+  XIcon,
 } from '@/components/icons';
 import { AdminUser } from '@/types/admin';
 import { formatRoleName, getRoleBadgeClass } from '@/lib/permissions/rbac';
@@ -60,18 +61,28 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
   };
 
   return (
-    <aside className={`admin-sidebar ${isOpen ? 'open' : ''}`}>
+    <aside
+      className={`admin-sidebar ${isOpen ? 'open' : ''}`}
+      aria-label="Admin Navigation"
+      role="dialog"
+      aria-modal={isOpen ? 'true' : undefined}
+    >
       {/* Brand Header */}
       <div
         style={{
-          padding: '1.25rem 1.5rem',
+          padding: '1.25rem 1.25rem',
           borderBottom: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          minHeight: 'var(--topbar-height)',
         }}
       >
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+        <Link
+          href="/"
+          onClick={onClose}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', textDecoration: 'none' }}
+        >
           <div
             style={{
               width: 32,
@@ -86,6 +97,7 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
               fontSize: '1.125rem',
               letterSpacing: '-0.05em',
               boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+              flexShrink: 0,
             }}
           >
             H
@@ -114,11 +126,31 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
             <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Admin Operations</div>
           </div>
         </Link>
+
+        {/* Mobile Close Button (Touch target >= 44x44px) */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="sidebar-close-btn"
+          aria-label="Close navigation drawer"
+          title="Close navigation"
+        >
+          <XIcon size={20} />
+        </button>
       </div>
 
       {/* Navigation List */}
       <nav style={{ flex: 1, padding: '1rem 0.75rem', overflowY: 'auto' }}>
-        <div style={{ fontSize: '0.6875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', padding: '0.5rem 0.75rem' }}>
+        <div
+          style={{
+            fontSize: '0.6875rem',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            color: 'var(--text-muted)',
+            padding: '0.5rem 0.75rem',
+          }}
+        >
           Management
         </div>
 
@@ -131,6 +163,7 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
                 <Link
                   href={item.href}
                   onClick={onClose}
+                  className="sidebar-nav-link"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -142,6 +175,7 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
                     color: isActive ? '#ffffff' : 'var(--text-secondary)',
                     backgroundColor: isActive ? 'var(--accent)' : 'transparent',
                     transition: 'all 0.15s ease',
+                    minHeight: 44,
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
@@ -151,7 +185,9 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <span style={{ color: isActive ? '#ffffff' : 'var(--text-muted)' }}>{item.icon}</span>
+                    <span style={{ color: isActive ? '#ffffff' : 'var(--text-muted)', display: 'flex' }}>
+                      {item.icon}
+                    </span>
                     <span>{item.name}</span>
                   </div>
                   {item.badge && (
@@ -177,7 +213,16 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
 
         {/* Live Public Website Link */}
         <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '0.6875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', padding: '0.25rem 0.75rem 0.5rem' }}>
+          <div
+            style={{
+              fontSize: '0.6875rem',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              color: 'var(--text-muted)',
+              padding: '0.25rem 0.75rem 0.5rem',
+            }}
+          >
             External Links
           </div>
           <a
@@ -188,11 +233,12 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '0.5rem 0.75rem',
+              padding: '0.625rem 0.75rem',
               borderRadius: 8,
               fontSize: '0.8125rem',
               color: 'var(--text-secondary)',
               transition: 'background-color 0.15s ease',
+              minHeight: 44,
             }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)')}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
@@ -207,6 +253,7 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
       <div
         style={{
           padding: '1rem 1.25rem',
+          paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))',
           borderTop: '1px solid var(--border)',
           backgroundColor: 'var(--bg-secondary)',
         }}
@@ -215,8 +262,8 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minWidth: 0 }}>
             <div
               style={{
-                width: 34,
-                height: 34,
+                width: 36,
+                height: 36,
                 borderRadius: '50%',
                 background: 'var(--accent-muted)',
                 color: 'var(--accent)',
@@ -245,7 +292,10 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
                 {currentUser?.name || 'Administrator'}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.125rem' }}>
-                <span className={`badge ${currentUser ? getRoleBadgeClass(currentUser.role) : 'badge-neutral'}`} style={{ fontSize: '0.625rem', padding: '1px 5px' }}>
+                <span
+                  className={`badge ${currentUser ? getRoleBadgeClass(currentUser.role) : 'badge-neutral'}`}
+                  style={{ fontSize: '0.625rem', padding: '1px 5px' }}
+                >
                   {currentUser ? formatRoleName(currentUser.role) : 'Admin'}
                 </span>
               </div>
@@ -255,17 +305,21 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
           <button
             onClick={handleLogout}
             title="Sign out of Admin Console"
+            aria-label="Sign out of Admin Console"
+            className="sidebar-logout-btn"
             style={{
               background: 'transparent',
               border: 'none',
               color: 'var(--text-muted)',
               cursor: 'pointer',
-              padding: '0.35rem',
-              borderRadius: 6,
+              padding: '0.5rem',
+              borderRadius: 8,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'color 0.15s ease',
+              minWidth: 44,
+              minHeight: 44,
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--danger)')}
             onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
@@ -277,4 +331,3 @@ export function AdminSidebar({ currentUser, isOpen, onClose }: AdminSidebarProps
     </aside>
   );
 }
-

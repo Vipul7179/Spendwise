@@ -94,11 +94,10 @@ export default function AdminLoginPage() {
       }}
     >
       <div
-        className="admin-card"
+        className="admin-card login-card"
         style={{
           maxWidth: 440,
           width: '100%',
-          padding: '2.25rem',
           boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
           border: '1px solid var(--border-light)',
           background: 'rgba(15, 39, 30, 0.95)',
