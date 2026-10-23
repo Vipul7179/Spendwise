@@ -3,19 +3,23 @@ import { verifyRealAdminSession } from '@/lib/auth/admin-guard';
 import { createClient } from '@supabase/supabase-js';
 import { randomBytes } from 'crypto';
 import { logAuthEvent } from '@/lib/auth/audit';
-import { validateImageBuffer, MAX_IMAGE_SIZE_BYTES } from '@/lib/storage/image-validator';
+import { validateImageBuffer } from '@/lib/storage/image-validator';
 
 export const dynamic = 'force-dynamic';
+
+// 2 MB file size limit enforced by the production 'banners' bucket
+const MAX_BANNER_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 
 /**
  * Administrative API: Secure Banner Image Upload to Supabase Storage
  *
- * Security Requirements:
- * 1. Strict server-side admin verification (rejects demo and unauthenticated sessions).
- * 2. Magic bytes validation (verifies genuine JPEG, PNG, WebP, AVIF, or GIF).
- * 3. File size clamped to 5 MB maximum.
- * 4. SVG strictly rejected to prevent XSS.
- * 5. Destination bucket isolated to 'banners'.
+ * Targets the verified public 'banners' bucket (2 MB max) on the Spendwise
+ * production Supabase project (omnhxlqykmtzxdagppcl).
+ *
+ * Requirements:
+ * 1. Authenticated administrator session verified on staging auth.
+ * 2. Upload routed to production via PROD_SUPABASE_URL and PROD_SUPABASE_SERVICE_KEY.
+ * 3. Never falls back to staging authentication project for storage writes.
  */
 export async function POST(request: Request) {
   // 1. Verify authenticated administrator session
@@ -37,12 +41,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'A valid image file is required.' }, { status: 400 });
   }
 
-  // 3. File size quick check
-  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+  // 3. File size check against 2 MB bucket limit
+  if (file.size > MAX_BANNER_IMAGE_SIZE_BYTES) {
     return NextResponse.json(
       {
         success: false,
-        error: `File size exceeds the 5 MB limit (received ${(file.size / 1024 / 1024).toFixed(2)} MB).`,
+        error: `File size exceeds the 2 MB limit for the banners bucket (received ${(file.size / 1024 / 1024).toFixed(2)} MB).`,
       },
       { status: 400 }
     );
@@ -52,22 +56,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'File cannot be empty.' }, { status: 400 });
   }
 
-  // 4. Read buffer and validate magic bytes
+  // 4. Read buffer and validate magic bytes (JPEG, PNG, WebP, AVIF) & reject SVG
   const fileBuffer = Buffer.from(await file.arrayBuffer());
   const validation = validateImageBuffer(fileBuffer, file.type);
   if (!validation.valid || !validation.extension) {
     return NextResponse.json({ success: false, error: validation.error || 'Invalid image format.' }, { status: 400 });
   }
 
-  // 5. Initialize server-side Supabase Storage client
-  const targetUrl = process.env.PROD_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const targetServiceKey = process.env.PROD_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // 5. Initialize server-side Supabase Storage client for PRODUCTION
+  const targetUrl = process.env.PROD_SUPABASE_URL;
+  const targetServiceKey = process.env.PROD_SUPABASE_SERVICE_KEY;
 
   if (!targetUrl || !targetServiceKey) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Supabase Storage credentials are not configured in hisbo-control/.env.local.',
+        error: 'Production Supabase Storage credentials (PROD_SUPABASE_URL and PROD_SUPABASE_SERVICE_KEY) are not configured in hisbo-control/.env.local.',
       },
       { status: 503 }
     );
@@ -77,7 +81,7 @@ export async function POST(request: Request) {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  // 6. Generate sanitized destination path (strictly in 'banners' bucket)
+  // 6. Generate sanitized destination path (strictly in production 'banners' bucket)
   const safeFilename = `banner_${Date.now()}_${randomBytes(4).toString('hex')}.${validation.extension}`;
   const bucketName = 'banners';
 
@@ -94,7 +98,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             success: false,
-            error: 'Storage bucket "banners" does not exist in the configured Supabase project. Please create the public "banners" bucket in Supabase Storage.',
+            error: 'Storage bucket "banners" does not exist in the configured Supabase project.',
           },
           { status: 502 }
         );

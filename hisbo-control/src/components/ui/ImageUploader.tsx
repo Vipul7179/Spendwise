@@ -11,6 +11,7 @@ interface ImageUploaderProps {
   helperText?: string;
   required?: boolean;
   aspectRatio?: 'banner' | 'blog' | 'square' | 'auto';
+  maxSizeMb?: number;
 }
 
 export function ImageUploader({
@@ -18,9 +19,10 @@ export function ImageUploader({
   value,
   onChange,
   uploadEndpoint,
-  helperText = 'Recommended: WebP, PNG, JPG or AVIF up to 5 MB.',
+  helperText,
   required = false,
   aspectRatio = 'auto',
+  maxSizeMb = 3,
 }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -75,8 +77,8 @@ export function ImageUploader({
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMessage(`Image is too large (${(file.size / 1024 / 1024).toFixed(2)} MB). Maximum size is 5 MB.`);
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      setErrorMessage(`Image is too large (${(file.size / 1024 / 1024).toFixed(2)} MB). Maximum size is ${maxSizeMb} MB.`);
       return;
     }
 
@@ -354,7 +356,7 @@ export function ImageUploader({
                     <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>or drag and drop</span>
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    PNG, JPG, WebP, or AVIF (max 5 MB)
+                    PNG, JPG, WebP, or AVIF (max {maxSizeMb} MB)
                   </div>
                 </>
               )}

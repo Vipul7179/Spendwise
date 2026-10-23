@@ -586,7 +586,8 @@ export default function BannerManagementPage() {
                 uploadEndpoint="/api/admin/banners/upload"
                 aspectRatio="banner"
                 required
-                helperText="Upload image or enter URL. Supports JPEG, PNG, WebP, AVIF (max 5 MB)."
+                maxSizeMb={2}
+                helperText="Upload image or enter URL. Supports JPEG, PNG, WebP, AVIF (max 2 MB)."
               />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
