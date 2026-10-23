@@ -14,9 +14,14 @@ export async function GET(request: Request) {
   }
 
   const result = await fetchLiveGA4Telemetry();
-  return NextResponse.json({
-    success: true,
-    ...result,
-  });
-}
 
+  if (result.requiresConfiguration) {
+    return NextResponse.json(result, { status: 503 });
+  }
+
+  if (!result.success) {
+    return NextResponse.json(result, { status: 502 });
+  }
+
+  return NextResponse.json(result, { status: 200 });
+}

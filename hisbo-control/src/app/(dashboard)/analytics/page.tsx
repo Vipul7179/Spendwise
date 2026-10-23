@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
   AnalyticsIcon,
   ExternalLinkIcon,
-  CheckCircleIcon,
+  RefreshIcon,
   AlertTriangleIcon,
 } from '@/components/icons';
 import { StatCard } from '@/components/ui/StatCard';
@@ -17,25 +17,100 @@ interface TelemetryData {
 
 export default function AnalyticsDashboardPage() {
   const [isConfigured, setIsConfigured] = useState(false);
+  const [requiresConfiguration, setRequiresConfiguration] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
+  const [measurementId, setMeasurementId] = useState('G-LCMEK1R5HY');
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchGA4Data = async () => {
+    try {
+      const res = await fetch('/api/admin/analytics/data');
+      const data = await res.json();
+
+      if (data.measurementId) {
+        setMeasurementId(data.measurementId);
+      }
+
+      if (res.ok && data.success && data.configured && data.telemetry) {
+        setIsConfigured(true);
+        setTelemetry(data.telemetry);
+        setConnectionError(null);
+        setRequiresConfiguration(false);
+      } else if (data.requiresConfiguration) {
+        setIsConfigured(false);
+        setTelemetry(null);
+        setConnectionError(null);
+        setRequiresConfiguration(true);
+      } else {
+        setIsConfigured(false);
+        setTelemetry(null);
+        setRequiresConfiguration(false);
+        setConnectionError(data.error || data.message || 'Failed to authenticate with Google Analytics 4 API.');
+      }
+    } catch (err: unknown) {
+      setIsConfigured(false);
+      setTelemetry(null);
+      setRequiresConfiguration(false);
+      setConnectionError(err instanceof Error ? err.message : 'Network error communicating with analytics endpoint.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleManualRefresh = () => {
+    setIsLoading(true);
+    void fetchGA4Data();
+  };
+
   useEffect(() => {
-    async function loadGA4() {
+    let ignore = false;
+
+    async function loadInitialGA4() {
       try {
         const res = await fetch('/api/admin/analytics/data');
         const data = await res.json();
-        if (data.configured && data.telemetry) {
+        if (ignore) return;
+
+        if (data.measurementId) {
+          setMeasurementId(data.measurementId);
+        }
+
+        if (res.ok && data.success && data.configured && data.telemetry) {
           setIsConfigured(true);
           setTelemetry(data.telemetry);
+          setConnectionError(null);
+          setRequiresConfiguration(false);
+        } else if (data.requiresConfiguration) {
+          setIsConfigured(false);
+          setTelemetry(null);
+          setConnectionError(null);
+          setRequiresConfiguration(true);
+        } else {
+          setIsConfigured(false);
+          setTelemetry(null);
+          setRequiresConfiguration(false);
+          setConnectionError(data.error || data.message || 'Failed to authenticate with Google Analytics 4 API.');
         }
-      } catch {
-        // fail silently and show unconfigured instructions
+      } catch (err: unknown) {
+        if (!ignore) {
+          setIsConfigured(false);
+          setTelemetry(null);
+          setRequiresConfiguration(false);
+          setConnectionError(err instanceof Error ? err.message : 'Network error communicating with analytics endpoint.');
+        }
       } finally {
-        setIsLoading(false);
+        if (!ignore) {
+          setIsLoading(false);
+        }
       }
     }
-    void loadGA4();
+
+    void loadInitialGA4();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return (
@@ -52,6 +127,17 @@ export default function AnalyticsDashboardPage() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button
+            onClick={handleManualRefresh}
+            disabled={isLoading}
+            className="btn btn-secondary btn-sm"
+            style={{ gap: '0.4rem' }}
+            title="Refresh GA4 Data"
+          >
+            <RefreshIcon size={14} className={isLoading ? 'spin' : ''} />
+            <span>{isLoading ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
+
           <a
             href="https://analytics.google.com"
             target="_blank"
@@ -69,14 +155,23 @@ export default function AnalyticsDashboardPage() {
       <div
         className="admin-card"
         style={{
-          borderLeft: `4px solid ${isConfigured ? 'var(--accent)' : '#38bdf8'}`,
+          borderLeft: `4px solid ${
+            isConfigured ? 'var(--accent)' : connectionError ? 'var(--danger, #ef4444)' : '#38bdf8'
+          }`,
           display: 'flex',
           alignItems: 'flex-start',
           gap: '1rem',
           padding: '1.25rem',
         }}
       >
-        <AnalyticsIcon size={24} style={{ color: isConfigured ? 'var(--accent)' : '#38bdf8', flexShrink: 0, marginTop: 2 }} />
+        <AnalyticsIcon
+          size={24}
+          style={{
+            color: isConfigured ? 'var(--accent)' : connectionError ? 'var(--danger, #ef4444)' : '#38bdf8',
+            flexShrink: 0,
+            marginTop: 2,
+          }}
+        />
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-main)' }}>
@@ -93,37 +188,92 @@ export default function AnalyticsDashboardPage() {
                 border: '1px solid rgba(56, 189, 248, 0.3)',
               }}
             >
-              Tag: G-LCMEK1R5HY
+              Tag: {measurementId}
             </span>
-            <span className={`badge ${isConfigured ? 'badge-success' : 'badge-neutral'}`}>
-              {isConfigured ? 'API Connected' : 'Client Streaming Only'}
+            <span
+              className={`badge ${
+                isConfigured ? 'badge-success' : connectionError ? 'badge-danger' : 'badge-neutral'
+              }`}
+            >
+              {isConfigured ? 'API Connected' : connectionError ? 'Connection Error' : 'Client Streaming Only'}
             </span>
           </div>
           <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginTop: '0.35rem', lineHeight: 1.5 }}>
             Hisbo web client (<code>hisbo.in</code>) collects client-side analytics via Measurement ID{' '}
-            <strong>G-LCMEK1R5HY</strong>. To embed live traffic telemetry and session charts directly into Hisbo Control,
+            <strong>{measurementId}</strong>. To embed live traffic telemetry and session metrics directly into Hisbo Control,
             configure a Google Cloud Service Account with the Google Analytics Data API (v1beta).
           </p>
         </div>
       </div>
+
+      {/* Connection Error Diagnostic Banner */}
+      {connectionError && (
+        <div
+          className="admin-card"
+          style={{
+            borderLeft: '4px solid var(--danger, #ef4444)',
+            background: 'rgba(239, 68, 68, 0.04)',
+            padding: '1.25rem',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '1rem',
+          }}
+        >
+          <AlertTriangleIcon size={22} style={{ color: 'var(--danger, #ef4444)', flexShrink: 0, marginTop: 2 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <h4 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Google Analytics Data API Connection Error
+              </h4>
+              <button
+                onClick={handleManualRefresh}
+                disabled={isLoading}
+                className="btn btn-secondary btn-sm"
+                style={{ gap: '0.4rem' }}
+              >
+                <RefreshIcon size={13} className={isLoading ? 'spin' : ''} />
+                <span>{isLoading ? 'Retrying...' : 'Retry Connection'}</span>
+              </button>
+            </div>
+            <p
+              style={{
+                fontSize: '0.8125rem',
+                color: 'var(--danger, #ef4444)',
+                marginTop: '0.4rem',
+                fontFamily: 'monospace',
+                background: 'rgba(239, 68, 68, 0.08)',
+                padding: '0.5rem 0.75rem',
+                borderRadius: 4,
+                wordBreak: 'break-word',
+              }}
+            >
+              {connectionError}
+            </p>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.5rem', lineHeight: 1.5 }}>
+              Check that your Google Cloud Service Account has <strong>Viewer</strong> access to GA4 Property ID{' '}
+              <code>559947530</code>, and that <code>GA4_PRIVATE_KEY</code> in Vercel contains a valid PEM key.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* KPI Stat Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
         <StatCard
           title="Total Unique Visitors (28d)"
           value={telemetry ? telemetry.activeUsers28d.toLocaleString() : '—'}
-          subtitle={isConfigured ? 'Active Users (28d)' : 'Awaiting GA4 Data API'}
+          subtitle={isConfigured ? 'Active Users (28d)' : connectionError ? 'Connection Error' : 'Awaiting GA4 Data API'}
           icon={<AnalyticsIcon size={18} />}
         />
         <StatCard
           title="Total Sessions"
           value={telemetry ? telemetry.totalSessions.toLocaleString() : '—'}
-          subtitle={isConfigured ? 'Direct & Organic' : 'Awaiting GA4 Data API'}
+          subtitle={isConfigured ? 'Direct & Organic' : connectionError ? 'Connection Error' : 'Awaiting GA4 Data API'}
         />
         <StatCard
           title="Bounce Rate"
           value={telemetry ? `${telemetry.bounceRate.toFixed(1)}%` : '—'}
-          subtitle={isConfigured ? 'Weighted Average' : 'Awaiting GA4 Data API'}
+          subtitle={isConfigured ? 'Weighted Average' : connectionError ? 'Connection Error' : 'Awaiting GA4 Data API'}
         />
         <StatCard
           title="Active Web Properties"
@@ -132,8 +282,8 @@ export default function AnalyticsDashboardPage() {
         />
       </div>
 
-      {/* GA4 Setup & Instructions Card */}
-      {!isConfigured && (
+      {/* GA4 Setup & Instructions Card (shown when unconfigured) */}
+      {!isConfigured && requiresConfiguration && (
         <div className="admin-card" style={{ padding: '1.5rem' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
             Configuring GA4 Telemetry Ingestion
@@ -209,7 +359,7 @@ export default function AnalyticsDashboardPage() {
                 3
               </span>
               <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-                Add credentials to <code>hisbo-control/.env.local</code>:
+                Add credentials to <code>hisbo-control/.env.local</code> or Vercel Environment Variables:
                 <pre
                   style={{
                     marginTop: '0.5rem',
@@ -255,7 +405,7 @@ GA4_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\n..."`}
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>https://www.hisbo.in</div>
                 </td>
                 <td>
-                  <code style={{ color: 'var(--accent)', fontWeight: 600 }}>G-LCMEK1R5HY</code>
+                  <code style={{ color: 'var(--accent)', fontWeight: 600 }}>{measurementId}</code>
                 </td>
                 <td>
                   <span className="badge badge-neutral">Web Stream</span>
@@ -283,3 +433,4 @@ GA4_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\n..."`}
     </div>
   );
 }
+
