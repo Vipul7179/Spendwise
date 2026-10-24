@@ -2,85 +2,14 @@
 
 import React, { useState, useRef, useEffect, useCallback, useSyncExternalStore } from 'react';
 
-export interface Testimonial {
-  name: string;
-  role: string;
-  avatarBg: string;
-  avatarInitials: string;
-  quote: string;
-  rating: number;
-  isDemo?: boolean;
-}
-
-const TESTIMONIALS: Testimonial[] = [
-  {
-    name: 'Aditi Sharma',
-    role: 'Working Professional',
-    avatarBg: 'linear-gradient(135deg, #0f7a58, #27c08a)',
-    avatarInitials: 'AS',
-    quote: 'Hisbo made it so easy to track my daily expenses. I finally stay within my budget!',
-    rating: 5,
-  },
-  {
-    name: 'Rohan Mehta',
-    role: 'College Student',
-    avatarBg: 'linear-gradient(135deg, #14a37f, #22d3ee)',
-    avatarInitials: 'RM',
-    quote: 'The budget alerts are super helpful. Now I save more every month.',
-    rating: 5,
-  },
-  {
-    name: 'Neha Verma',
-    role: 'Freelancer',
-    avatarBg: 'linear-gradient(135deg, #8a5cf6, #e0529c)',
-    avatarInitials: 'NV',
-    quote: 'I love the clean design and simple charts. It just works!',
-    rating: 5,
-  },
-  {
-    name: 'Karan Singh',
-    role: 'Small Business Owner',
-    avatarBg: 'linear-gradient(135deg, #e29a00, #f59e0b)',
-    avatarInitials: 'KS',
-    quote: 'Perfect for managing personal and business expenses together.',
-    rating: 5,
-  },
-  {
-    name: 'Priya Patel',
-    role: 'Product Designer',
-    avatarBg: 'linear-gradient(135deg, #059669, #34d399)',
-    avatarInitials: 'PP',
-    quote: 'Splitting group dinner bills with roommates is completely painless now. Love the instant WhatsApp breakdown.',
-    rating: 5,
-    isDemo: true,
-  },
-  {
-    name: 'Vikram Malhotra',
-    role: 'Software Architect',
-    avatarBg: 'linear-gradient(135deg, #0284c7, #38bdf8)',
-    avatarInitials: 'VM',
-    quote: 'Automated recurring expense reminders have saved me from missing subscription renewals multiple times.',
-    rating: 5,
-    isDemo: true,
-  },
-  {
-    name: 'Ananya Iyer',
-    role: 'Content Creator',
-    avatarBg: 'linear-gradient(135deg, #c026d3, #f472b6)',
-    avatarInitials: 'AI',
-    quote: 'Visual category charts help me spot unnecessary lifestyle creep before it affects my quarterly savings target.',
-    rating: 5,
-    isDemo: true,
-  },
-  {
-    name: 'Rajesh Kulkarni',
-    role: 'Financial Consultant',
-    avatarBg: 'linear-gradient(135deg, #d97706, #fbbf24)',
-    avatarInitials: 'RK',
-    quote: 'Guest mode gave me the confidence to test everything without giving away credentials. Transition to sync was seamless.',
-    rating: 5,
-    isDemo: true,
-  },
+// Product examples, not endorsements. No approved customer reviews are stored here.
+const TESTIMONIALS = [
+  { name: 'Track daily spending', role: 'Feature example', avatarBg: 'linear-gradient(135deg, #0f7a58, #27c08a)', avatarInitials: '01', quote: 'Log an expense, choose its category and see how it contributes to your monthly spending.' },
+  { name: 'Plan category budgets', role: 'Feature example', avatarBg: 'linear-gradient(135deg, #14a37f, #22d3ee)', avatarInitials: '02', quote: 'Set category limits and use budget alerts to keep an eye on spending as the month progresses.' },
+  { name: 'Follow savings goals', role: 'Feature example', avatarBg: 'linear-gradient(135deg, #8a5cf6, #e0529c)', avatarInitials: '03', quote: 'Create a savings target, record contributions and follow your progress towards it.' },
+  { name: 'Organize shared bills', role: 'Feature example', avatarBg: 'linear-gradient(135deg, #e29a00, #f59e0b)', avatarInitials: '04', quote: 'Record shared expenses and review who owes whom before sending a payment reminder.' },
+  { name: 'Remember recurring costs', role: 'Feature example', avatarBg: 'linear-gradient(135deg, #059669, #34d399)', avatarInitials: '05', quote: 'Add recurring expenses such as rent and subscriptions to keep regular costs organized.' },
+  { name: 'Try guest mode', role: 'Feature example', avatarBg: 'linear-gradient(135deg, #0284c7, #38bdf8)', avatarInitials: '06', quote: 'Explore Hisbo without an account. Guest data stays in this browser on this device.' },
 ];
 
 const PRE_BUFFER = 3;
@@ -111,8 +40,14 @@ export default function TestimonialCarousel() {
   // extended index: starts at PRE_BUFFER (which corresponds to TESTIMONIALS[0])
   const [currentIndex, setCurrentIndex] = useState(PRE_BUFFER);
   const [isTransitioning, setIsTransitioning] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(3);
+  const [isHovered, setIsHovered] = useState(false);
+  const [hasFocus, setHasFocus] = useState(false);
+  const [isTouching, setIsTouching] = useState(false);
+  const [manualPause, setManualPause] = useState(false);
+  const [interactionPause, setInteractionPause] = useState(false);
+  const indexRef = useRef(PRE_BUFFER);
+  const busyRef = useRef(false);
+  const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const touchStartX = useRef<number | null>(null);
   const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -123,44 +58,42 @@ export default function TestimonialCarousel() {
     getServerSnapshot
   );
 
-  // Responsive visible count tracking (3 on desktop, 2 on tablet, 1 on mobile)
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setVisibleCount(3);
-      } else if (window.innerWidth >= 768) {
-        setVisibleCount(2);
-      } else {
-        setVisibleCount(1);
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const slideNext = useCallback(() => {
-    setIsTransitioning(true);
-    setCurrentIndex((prev) => prev + 1);
-  }, []);
-
-  const slidePrev = useCallback(() => {
-    setIsTransitioning(true);
-    setCurrentIndex((prev) => prev - 1);
-  }, []);
-
-  // Handle seamless infinite loop jump when transition completes
-  const handleTransitionEnd = () => {
-    if (currentIndex >= TESTIMONIALS.length + PRE_BUFFER) {
-      // Reached post-buffer clone: snap back to original start
+  // Both transitionend and this timer settle a move. Never depend on CSS events
+  // (reduced motion, interrupted transitions and background tabs may omit them).
+  const finishSlide = useCallback(() => {
+    if (transitionTimer.current !== null) clearTimeout(transitionTimer.current);
+    transitionTimer.current = null;
+    const normalized = PRE_BUFFER + ((indexRef.current - PRE_BUFFER) % TESTIMONIALS.length + TESTIMONIALS.length) % TESTIMONIALS.length;
+    if (normalized !== indexRef.current) {
+      indexRef.current = normalized;
       setIsTransitioning(false);
-      setCurrentIndex(PRE_BUFFER);
-    } else if (currentIndex < PRE_BUFFER) {
-      // Reached pre-buffer clone: snap to corresponding end
-      setIsTransitioning(false);
-      setCurrentIndex(TESTIMONIALS.length + currentIndex);
+      setCurrentIndex(normalized);
     }
+    busyRef.current = false;
+  }, []);
+
+  const moveTo = useCallback((index: number) => {
+    if (busyRef.current) return;
+    const instant = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    indexRef.current = instant
+      ? PRE_BUFFER + ((index - PRE_BUFFER) % TESTIMONIALS.length + TESTIMONIALS.length) % TESTIMONIALS.length
+      : index;
+    setIsTransitioning(!instant);
+    setCurrentIndex(indexRef.current);
+    if (!instant) {
+      busyRef.current = true;
+      transitionTimer.current = setTimeout(finishSlide, 600);
+    }
+  }, [finishSlide]);
+  const slideNext = useCallback(() => moveTo(indexRef.current + 1), [moveTo]);
+  const slidePrev = useCallback(() => moveTo(indexRef.current - 1), [moveTo]);
+  const pauseAfterInteraction = () => {
+    setInteractionPause(true);
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => setInteractionPause(false), 4000);
   };
+
+  const isPaused = isHovered || hasFocus || isTouching || manualPause || interactionPause;
 
   // Autoplay advancing carousel every 5s (pauses on hover, focus, touch, or reduced motion)
   useEffect(() => {
@@ -177,26 +110,31 @@ export default function TestimonialCarousel() {
   useEffect(() => {
     return () => {
       if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+      if (transitionTimer.current !== null) clearTimeout(transitionTimer.current);
     };
   }, []);
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowLeft') {
+      e.preventDefault(); pauseAfterInteraction();
       slidePrev();
     } else if (e.key === 'ArrowRight') {
+      e.preventDefault(); pauseAfterInteraction();
       slideNext();
     }
   };
 
   // Mobile Touch Swipe support
   const handleTouchStart = (e: React.TouchEvent) => {
-    setIsPaused(true);
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    setIsTouching(true);
+    pauseAfterInteraction();
     touchStartX.current = e.touches[0].clientX;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    setIsTouching(false);
+    pauseAfterInteraction();
     if (touchStartX.current === null) return;
     const touchEndX = e.changedTouches[0].clientX;
     const diff = touchStartX.current - touchEndX;
@@ -206,25 +144,22 @@ export default function TestimonialCarousel() {
       slidePrev();
     }
     touchStartX.current = null;
-    resumeTimerRef.current = setTimeout(() => setIsPaused(false), 2500);
+
   };
 
-  // Real review index for pagination dots (0 to 7)
+  // Original example index for pagination indicators.
   const normalizedIndex =
     ((currentIndex - PRE_BUFFER) % TESTIMONIALS.length + TESTIMONIALS.length) %
     TESTIMONIALS.length;
 
   const goToReview = (reviewIdx: number) => {
-    setIsPaused(true);
-    setIsTransitioning(true);
-    setCurrentIndex(PRE_BUFFER + reviewIdx);
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-    resumeTimerRef.current = setTimeout(() => setIsPaused(false), 4000);
+    pauseAfterInteraction();
+    moveTo(PRE_BUFFER + reviewIdx);
   };
 
-  // Transform calculation based on visibleCount and 20px gap
+  // CSS owns card count and translation at every breakpoint, including SSR.
   const transformStyle: React.CSSProperties = {
-    transform: `translateX(calc(-${currentIndex} * ((100% + 20px) / ${visibleCount})))`,
+    transform: `translateX(calc(-${currentIndex} * ((100% + 20px) / var(--testimonials-visible))))`,
     transition:
       reducedMotion || !isTransitioning
         ? 'none'
@@ -238,14 +173,15 @@ export default function TestimonialCarousel() {
       aria-labelledby="testimonials-heading"
       onKeyDown={handleKeyDown}
       tabIndex={0}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocus={() => setIsPaused(true)}
-      onBlur={() => setIsPaused(false)}
+      aria-roledescription="carousel"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setHasFocus(true)}
+      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setHasFocus(false); }}
     >
       <div className="testimonials-header">
-        <h2 id="testimonials-heading">Real people. Better money habits.</h2>
-        <p>Join thousands who are already taking control with Hisbo.</p>
+        <h2 id="testimonials-heading">Explore better money habits.</h2>
+        <p>Feature examples to help you explore Hisbo. These are not customer reviews.</p>
       </div>
 
       <div className="testimonials-wrapper">
@@ -254,12 +190,10 @@ export default function TestimonialCarousel() {
           type="button"
           className="t-nav-btn t-prev-btn"
           onClick={() => {
-            setIsPaused(true);
+            pauseAfterInteraction();
             slidePrev();
-            if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-            resumeTimerRef.current = setTimeout(() => setIsPaused(false), 4000);
           }}
-          aria-label="Previous testimonials"
+          aria-label="Previous feature examples"
         >
           <svg
             width="18"
@@ -281,17 +215,21 @@ export default function TestimonialCarousel() {
           className="testimonials-viewport"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          aria-live="polite"
+          onTouchCancel={() => { touchStartX.current = null; setIsTouching(false); pauseAfterInteraction(); }}
+          aria-live={isPaused || reducedMotion ? 'polite' : 'off'}
         >
           <div
             className="testimonials-track"
             style={transformStyle}
-            onTransitionEnd={handleTransitionEnd}
+            onTransitionEnd={(event) => {
+              if (event.target === event.currentTarget && event.propertyName === 'transform') finishSlide();
+            }}
           >
             {EXTENDED_ITEMS.map((t, idx) => {
               const cardKey = `${t.name}-${idx}`;
               return (
-                <div key={cardKey} className="testimonial-slide">
+                <div key={cardKey} className="testimonial-slide"
+                  aria-hidden={idx < PRE_BUFFER || idx >= PRE_BUFFER + TESTIMONIALS.length}>
                   <div className="testimonial-card">
                     <div className="t-user-header">
                       <div
@@ -307,18 +245,7 @@ export default function TestimonialCarousel() {
                       </div>
                     </div>
 
-                    <div
-                      className="t-stars"
-                      aria-label={`${t.rating} out of 5 stars`}
-                    >
-                      {Array.from({ length: t.rating }).map((_, i) => (
-                        <span key={i} className="t-star" aria-hidden="true">
-                          ★
-                        </span>
-                      ))}
-                    </div>
-
-                    <p className="t-quote">&ldquo;{t.quote}&rdquo;</p>
+                    <p className="t-quote">{t.quote}</p>
                   </div>
                 </div>
               );
@@ -331,12 +258,10 @@ export default function TestimonialCarousel() {
           type="button"
           className="t-nav-btn t-next-btn"
           onClick={() => {
-            setIsPaused(true);
+            pauseAfterInteraction();
             slideNext();
-            if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-            resumeTimerRef.current = setTimeout(() => setIsPaused(false), 4000);
           }}
-          aria-label="Next testimonials"
+          aria-label="Next feature examples"
         >
           <svg
             width="18"
@@ -354,11 +279,18 @@ export default function TestimonialCarousel() {
         </button>
       </div>
 
+      <div className="t-pagination-dots">
+        <button type="button" className="calc-ghost-btn" aria-pressed={manualPause}
+          onClick={() => setManualPause(!manualPause)}>
+          {manualPause ? 'Resume automatic scrolling' : 'Pause automatic scrolling'}
+        </button>
+      </div>
+
       {/* Pagination Indicators (Clickable Dots) */}
       <div
         className="t-pagination-dots"
-        role="tablist"
-        aria-label="Testimonial selection"
+        role="group"
+        aria-label="Feature example selection"
       >
         {TESTIMONIALS.map((t, idx) => {
           const isSelected = idx === normalizedIndex;
@@ -368,9 +300,8 @@ export default function TestimonialCarousel() {
               type="button"
               className={`t-dot ${isSelected ? 'active' : ''}`}
               onClick={() => goToReview(idx)}
-              aria-label={`Go to review by ${t.name}`}
-              aria-selected={isSelected}
-              role="tab"
+              aria-label={`Show ${t.name.toLowerCase()}`}
+              aria-pressed={isSelected}
             />
           );
         })}
@@ -378,4 +309,3 @@ export default function TestimonialCarousel() {
     </section>
   );
 }
-

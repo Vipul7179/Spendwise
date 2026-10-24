@@ -33,15 +33,26 @@ export default function HeroDeviceMockup() {
   );
 
   const phoneRef = useRef<HTMLDivElement>(null);
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (clickTimer.current !== null) clearTimeout(clickTimer.current);
+    if (touchTimer.current !== null) clearTimeout(touchTimer.current);
+  }, []);
 
   // Spent count counter animation
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const target = 16735;
     const duration = 1200;
     const start = performance.now();
 
     let frameId: number;
     const step = (now: number) => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setSpentCount(target);
+        return;
+      }
       const progress = Math.min(1, (now - start) / duration);
       // easeOutCubic
       const ease = 1 - Math.pow(1 - progress, 3);
@@ -85,16 +96,19 @@ export default function HeroDeviceMockup() {
   const handleClick = useCallback(() => {
     if (reducedMotion) return;
     setIsClicked(true);
-    setTimeout(() => setIsClicked(false), 600);
+    if (clickTimer.current !== null) clearTimeout(clickTimer.current);
+    clickTimer.current = setTimeout(() => setIsClicked(false), 600);
   }, [reducedMotion]);
 
   const handleTouchStart = useCallback(() => {
     if (reducedMotion) return;
+    if (touchTimer.current !== null) clearTimeout(touchTimer.current);
     setIsTapped(true);
   }, [reducedMotion]);
 
   const handleTouchEnd = useCallback(() => {
-    setTimeout(() => setIsTapped(false), 250);
+    if (touchTimer.current !== null) clearTimeout(touchTimer.current);
+    touchTimer.current = setTimeout(() => setIsTapped(false), 250);
   }, []);
 
   // Compute inline transform style
@@ -436,6 +450,7 @@ export default function HeroDeviceMockup() {
         onClick={handleClick}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
         title="Interactive Hisbo Mobile Preview"
       >
         <div className="iphone-chassis">
@@ -566,6 +581,16 @@ export default function HeroDeviceMockup() {
                         strokeDasharray="23.8 215.2"
                         strokeDashoffset="-198.0"
                       />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="transparent"
+                        stroke="#8a5cf6"
+                        strokeWidth="16"
+                        strokeDasharray="16.7 222.3"
+                        strokeDashoffset="-221.8"
+                      />
                     </svg>
                   </div>
                   <div className="phone-legend-list">
@@ -583,6 +608,16 @@ export default function HeroDeviceMockup() {
                       <span className="phone-cat-dot" style={{ background: '#22d3ee' }} aria-hidden="true" />
                       <span className="phone-cat-name">Travel</span>
                       <b className="phone-cat-pct">20%</b>
+                    </div>
+                    <div className="phone-legend-row">
+                      <span className="phone-cat-dot" style={{ background: '#e0529c' }} aria-hidden="true" />
+                      <span className="phone-cat-name">Shopping</span>
+                      <b className="phone-cat-pct">10%</b>
+                    </div>
+                    <div className="phone-legend-row">
+                      <span className="phone-cat-dot" style={{ background: '#8a5cf6' }} aria-hidden="true" />
+                      <span className="phone-cat-name">Other</span>
+                      <b className="phone-cat-pct">7%</b>
                     </div>
                   </div>
                 </div>

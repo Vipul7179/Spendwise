@@ -47,9 +47,9 @@ export async function verifyAdminSession(): Promise<AdminAuthResult> {
 
   try {
     const supabase = await createSupabaseServerClient();
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const { data: { user: verifiedUser }, error: sessionError } = await supabase.auth.getUser();
 
-    if (sessionError || !session || !session.user) {
+    if (sessionError || !verifiedUser) {
       return {
         isAuthenticated: false,
         isAdmin: false,
@@ -59,8 +59,8 @@ export async function verifyAdminSession(): Promise<AdminAuthResult> {
       };
     }
 
-    const userId = session.user.id;
-    const userEmail = (session.user.email || '').toLowerCase();
+    const userId = verifiedUser.id;
+    const userEmail = (verifiedUser.email || '').toLowerCase();
 
     // 2. Query public.profiles to verify administrative privileges
     // Queries only standard columns without exposing internal structure
@@ -70,7 +70,7 @@ export async function verifyAdminSession(): Promise<AdminAuthResult> {
       .eq('id', userId)
       .maybeSingle();
 
-    if (profileError || !profile || !profile.is_admin) {
+    if (profileError || !profile || profile.is_admin !== true) {
       // Invalidate the session immediately — unauthorized users cannot hold an active session
       try {
         await supabase.auth.signOut();
@@ -125,8 +125,8 @@ export async function verifyAdminSession(): Promise<AdminAuthResult> {
 
     const adminUser: AdminUser = {
       id: profile.id,
-      email: session.user.email || profile.email || 'admin@hisbo.in',
-      name: profile.name || session.user.email?.split('@')[0] || 'Administrator',
+      email: verifiedUser.email || profile.email || 'admin@hisbo.in',
+      name: profile.name || verifiedUser.email?.split('@')[0] || 'Administrator',
       role: 'super_admin',
       createdAt: profile.created_at || new Date().toISOString(),
       lastLogin: profile.last_seen || new Date().toISOString(),

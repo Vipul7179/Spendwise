@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { LinkFeedback } from '@/components/common/NavigationFeedback';
 import ThemeToggle from '@/components/marketing/ThemeToggle';
 import GuestEntryButton from '@/components/auth/GuestEntryButton';
+import { manageDialogFocus } from '@/lib/dialog-focus';
 
 function subscribeToGuest(callback: () => void) {
   window.addEventListener('storage', callback);
@@ -68,23 +69,11 @@ export default function Navbar() {
     };
   }, []);
 
-  // Prevent scrolling when mobile drawer is open & handle Escape key
+  // Focus, Escape, scroll lock and background inertness share the dialog lifecycle.
   useEffect(() => {
     if (!mobileMenuOpen) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setMobileMenuOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    const dialog = document.getElementById('hisbo-mobile-navigation');
+    if (dialog) return manageDialogFocus(dialog, () => setMobileMenuOpen(false));
   }, [mobileMenuOpen]);
 
   const isBlogActive = pathname.startsWith('/blog');
@@ -208,6 +197,8 @@ export default function Navbar() {
         <div className="mobile-nav-backdrop" onClick={closeMenu}>
           <div
             className="mobile-nav-drawer"
+            id="hisbo-mobile-navigation"
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label="Mobile Navigation"
@@ -261,7 +252,7 @@ export default function Navbar() {
                   How it works
                 </Link>
                 <Link href="/#testimonials" onClick={closeMenu}>
-                  Reviews
+                  Explore
                 </Link>
                 <Link href="/#faq" onClick={closeMenu}>
                   FAQ

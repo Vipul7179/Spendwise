@@ -2127,6 +2127,7 @@
    TESTIMONIALS CAROUSEL (Autoplay, multi-card, touch-swipe, pause on hover/focus)
    ==================================================================== */
 .testimonials-section {
+  --testimonials-visible: 3;
   padding-top: 80px;
   outline: none;
 }
@@ -2171,6 +2172,7 @@
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
+  .testimonials-section { --testimonials-visible: 2; }
   .testimonial-slide {
     flex: 0 0 calc((100% - 20px) / 2);
     max-width: calc((100% - 20px) / 2);
@@ -2178,6 +2180,7 @@
 }
 
 @media (max-width: 767px) {
+  .testimonials-section { --testimonials-visible: 1; }
   .testimonials-wrapper {
     gap: 8px;
     padding: 0 4px;
@@ -2854,4 +2857,12 @@
   .lp .lhr h1 {
     font-size: 1.95rem;
   }
+}
+
+/* Active keyboard option uses the existing dropdown hover treatment. */
+.calc-dropdown-option[data-active="true"] { background: color-mix(in srgb, var(--acc) 10%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .gold-coin-accessory { animation: none !important; }
+  .lp .fcard, .step-card, .calc-ghost-btn, .calc-guest-cta-link { transition: none; }
+  .lp .fcard:hover, .step-card:hover, .calc-ghost-btn:hover, .calc-guest-cta-link:hover { transform: none; }
 }

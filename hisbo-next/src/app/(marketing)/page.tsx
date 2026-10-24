@@ -501,7 +501,7 @@ export default async function LandingPage() {
           <div className="final-cta-text-panel">
             <h2 id="final-cta-heading">Start your smarter money journey today</h2>
             <p>
-              Join thousands who are already tracking, saving and reaching their goals with Hisbo.
+              Start tracking, saving and working towards your goals with Hisbo.
             </p>
             <div className="lcta">
               <Link className="lbtn w big" href="/signup">

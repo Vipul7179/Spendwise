@@ -20,7 +20,8 @@ function parseCookieHeader(cookieHeader: string | null): Map<string, string> {
     if (idx > -1) {
       const key = pair.slice(0, idx).trim();
       const val = pair.slice(idx + 1).trim();
-      map.set(key, decodeURIComponent(val));
+      try { map.set(key, decodeURIComponent(val)); }
+      catch { map.set(key, val); } // A malformed unrelated cookie must not throw.
     }
   }
   return map;
@@ -80,19 +81,17 @@ export async function verifyRealAdminSession(request?: Request): Promise<RealAdm
 
   // REQUIREMENT 4: Server-side authentication and is_admin confirmation
   try {
-    let session = null;
+    let verifiedUser = null;
 
     try {
       const supabase = await createSupabaseServerClient();
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (!sessionError && sessionData?.session) {
-        session = sessionData.session;
-      }
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data?.user) verifiedUser = data.user;
     } catch {
-      // If server client cannot access Next.js cookies, session remains null
+      // If server client cannot access Next.js cookies, identity remains unverified
     }
 
-    if (!session || !session.user) {
+    if (!verifiedUser) {
       return {
         authorized: false,
         user: null,
@@ -101,8 +100,8 @@ export async function verifyRealAdminSession(request?: Request): Promise<RealAdm
       };
     }
 
-    const userId = session.user.id;
-    const userEmail = (session.user.email || '').toLowerCase();
+    const userId = verifiedUser.id;
+    const userEmail = (verifiedUser.email || '').toLowerCase();
 
     // Verify is_admin status in staging public.profiles
     const supabase = await createSupabaseServerClient();
@@ -112,7 +111,7 @@ export async function verifyRealAdminSession(request?: Request): Promise<RealAdm
       .eq('id', userId)
       .maybeSingle();
 
-    if (profileErr || !profile || !profile.is_admin) {
+    if (profileErr || !profile || profile.is_admin !== true) {
       logAuthEvent('warn', 'REAL_DATA_ACCESS_DENIED' as any, {
         userId,
         email: userEmail,
@@ -143,8 +142,8 @@ export async function verifyRealAdminSession(request?: Request): Promise<RealAdm
 
     const adminUser: AdminUser = {
       id: profile.id,
-      email: session.user.email || profile.email || 'admin@hisbo.in',
-      name: profile.name || session.user.email?.split('@')[0] || 'Administrator',
+      email: verifiedUser.email || profile.email || 'admin@hisbo.in',
+      name: profile.name || verifiedUser.email?.split('@')[0] || 'Administrator',
       role: 'super_admin',
       createdAt: profile.created_at || new Date().toISOString(),
       lastLogin: profile.last_seen || new Date().toISOString(),

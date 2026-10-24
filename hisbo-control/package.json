@@ -6,7 +6,8 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "node --import ./scripts/register-typescript.mjs --test scripts/test-login-security.mjs scripts/test-admin-safeguards.mjs scripts/test-operator-safeguards.mjs scripts/test-reporting-safeguards.mjs scripts/test-ga4-normalization.mjs scripts/test-auth-regressions.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

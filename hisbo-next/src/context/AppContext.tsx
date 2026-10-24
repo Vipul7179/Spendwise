@@ -142,8 +142,10 @@ export function AppProvider({ children, publicView = false }: { children: React.
     const root = document.documentElement;
     if (theme === 'light' || theme === 'dark') {
       root.setAttribute('data-theme', theme);
-    } else {
+    } else if (theme === 'auto') {
       root.removeAttribute('data-theme');
+    } else {
+      root.setAttribute('data-theme', 'light');
     }
   }, []);
 
@@ -215,6 +217,12 @@ export function AppProvider({ children, publicView = false }: { children: React.
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) localState = restoreState(JSON.parse(raw));
+        else {
+          // First guest entry has no finance snapshot yet. Keep the explicit
+          // landing preference without creating user data on the public page.
+          const savedTheme = localStorage.getItem('sw_theme');
+          if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'auto') localState = { ...localState, theme: savedTheme };
+        }
       } catch {
         showToast('Could not read saved data on this device.', 'warn');
       }
@@ -676,6 +684,10 @@ export function AppProvider({ children, publicView = false }: { children: React.
       const curIdx = themes.indexOf(prev.theme || 'auto');
       const nextTheme = themes[(curIdx + 1) % themes.length];
       applyTheme(nextTheme);
+      try {
+        if (nextTheme === 'auto') localStorage.removeItem('sw_theme');
+        else localStorage.setItem('sw_theme', nextTheme);
+      } catch { /* Theme remains usable when preference storage is unavailable. */ }
       return { ...prev, theme: nextTheme };
     });
   }, [updateStateAndSync, applyTheme]);
@@ -780,7 +792,7 @@ export function AppProvider({ children, publicView = false }: { children: React.
     const reset = restoreState(null);
     stateRef.current = reset;
     setState(reset);
-    applyTheme('auto');
+    applyTheme(reset.theme || 'light');
     router.push('/login');
     return true;
   }, [router, applyTheme, showToast, syncNow]);

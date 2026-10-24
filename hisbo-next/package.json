@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --test scripts/test-blog-regressions.cjs scripts/test-legacy-parity.cjs scripts/test-phase2.cjs scripts/test-banner-safety.cjs scripts/test-blog-errors.cjs scripts/test-seo-p0.cjs scripts/test-google-auth.cjs scripts/test-ux-fixes.cjs scripts/test-analytics.cjs scripts/test-markdown.cjs scripts/test-image-loading.cjs"
+    "test": "node --test scripts/test-blog-regressions.cjs scripts/test-legacy-parity.cjs scripts/test-phase2.cjs scripts/test-banner-safety.cjs scripts/test-blog-errors.cjs scripts/test-seo-p0.cjs scripts/test-google-auth.cjs scripts/test-ux-fixes.cjs scripts/test-analytics.cjs scripts/test-markdown.cjs scripts/test-image-loading.cjs scripts/test-marketing-regressions.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
