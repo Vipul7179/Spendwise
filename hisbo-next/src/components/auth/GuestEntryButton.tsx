@@ -1,13 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { trackGuestModeStarted } from '@/lib/analytics';
+import { manageDialogFocus } from '@/lib/dialog-focus';
 
 export default function GuestEntryButton({ className, children }: { className: string; children: React.ReactNode }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (open && dialogRef.current) return manageDialogFocus(dialogRef.current, () => setOpen(false));
+  }, [open]);
   return <>
     <button type="button" className={className} onClick={() => {
       if (localStorage.getItem('sw_guest') === '1') router.push('/overview');
@@ -16,8 +21,7 @@ export default function GuestEntryButton({ className, children }: { className: s
     {open && <div className="mod" onClick={event => {
       if (event.currentTarget === event.target) setOpen(false);
     }}>
-      <div className="box" role="dialog" aria-modal="true" aria-label="Continue without an account?"
-        onKeyDown={event => { if (event.key === 'Escape') setOpen(false); }}>
+      <div ref={dialogRef} tabIndex={-1} className="box" role="dialog" aria-modal="true" aria-label="Continue without an account?">
         <div className="nm">
           <div className="av" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

@@ -28,8 +28,56 @@ export default function ExpenseCalculator() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [justAddedMsg, setJustAddedMsg] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState(0);
+  const notificationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => () => {
+    if (notificationTimer.current !== null) clearTimeout(notificationTimer.current);
+  }, []);
+
+  const notify = (message: string, duration: number) => {
+    if (notificationTimer.current !== null) clearTimeout(notificationTimer.current);
+    setJustAddedMsg(message);
+    notificationTimer.current = setTimeout(() => {
+      notificationTimer.current = null;
+      setJustAddedMsg(null);
+    }, duration);
+  };
+
+  const selectCategory = (index: number) => {
+    setSelectedCatId(categories[index].id);
+    setActiveCategory(index);
+    setDropdownOpen(false);
+  };
+
+  const handleCategoryKey = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'Tab') { setDropdownOpen(false); return; }
+    if (event.key === 'Escape') {
+      if (dropdownOpen) { event.preventDefault(); event.stopPropagation(); setDropdownOpen(false); }
+      return;
+    }
+    const selected = categories.findIndex(category => category.id === selectedCatId);
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      setActiveCategory(dropdownOpen
+        ? (activeCategory + (event.key === 'ArrowDown' ? 1 : -1) + categories.length) % categories.length
+        : selected);
+      setDropdownOpen(true);
+    } else if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault();
+      setActiveCategory(event.key === 'Home' ? 0 : categories.length - 1);
+      setDropdownOpen(true);
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (dropdownOpen) selectCategory(activeCategory);
+      else { setActiveCategory(selected); setDropdownOpen(true); }
+    } else if (/^[a-z]$/i.test(event.key)) {
+      const index = categories.findIndex(category => category.name.toLowerCase().startsWith(event.key.toLowerCase()));
+      if (index !== -1) { event.preventDefault(); setActiveCategory(index); setDropdownOpen(true); }
+    }
+  };
 
   const totalSpent = categories.reduce((sum, c) => sum + c.amount, 0);
   const percentUsed = Math.min(100, Math.round((totalSpent / MONTHLY_BUDGET) * 100));
@@ -47,17 +95,6 @@ export default function ExpenseCalculator() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [dropdownOpen]);
 
-  // Close dropdown on Escape
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && dropdownOpen) {
-        setDropdownOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dropdownOpen]);
-
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -68,7 +105,7 @@ export default function ExpenseCalculator() {
       return;
     }
 
-    const parsed = parseFloat(trimmed);
+    const parsed = Number(trimmed);
     if (isNaN(parsed) || !isFinite(parsed)) {
       setValidationError('Please enter a valid numeric amount.');
       return;
@@ -86,6 +123,10 @@ export default function ExpenseCalculator() {
 
     // Clean amount (supports decimals rounded to 2 places)
     const cleanAmount = Math.round(parsed * 100) / 100;
+    if (cleanAmount < 0.01 || Math.abs(parsed * 100 - Math.round(parsed * 100)) > 0.000001) {
+      setValidationError('Enter at least ₹0.01, with no more than two decimal places.');
+      return;
+    }
     setValidationError(null);
 
     // Update Category Totals
@@ -98,21 +139,21 @@ export default function ExpenseCalculator() {
     );
 
     const catName = categories.find((c) => c.id === selectedCatId)?.name || 'Expense';
-    setJustAddedMsg(
+    notify(
       `Added ₹${cleanAmount.toLocaleString('en-IN', {
         maximumFractionDigits: 2,
-      })} to ${catName}!`
+      })} to ${catName}!`, 3000
     );
-    setTimeout(() => setJustAddedMsg(null), 3000);
   };
 
   const handleReset = () => {
     setCategories(INITIAL_CATEGORIES);
     setInputAmount('500');
     setSelectedCatId('food');
+    setActiveCategory(0);
+    setDropdownOpen(false);
     setValidationError(null);
-    setJustAddedMsg('Demo reset to initial values.');
-    setTimeout(() => setJustAddedMsg(null), 2500);
+    notify('Demo reset to initial values.', 2500);
   };
 
   const selectedCategory =
@@ -210,19 +251,26 @@ export default function ExpenseCalculator() {
                 <div className="calc-dropdown-container">
                   <button
                     type="button"
+                    role="combobox"
                     className={`calc-field-control calc-dropdown-trigger ${
                       dropdownOpen ? 'is-open' : ''
                     }`}
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    onClick={() => {
+                      setActiveCategory(categories.findIndex(category => category.id === selectedCatId));
+                      setDropdownOpen(!dropdownOpen);
+                    }}
+                    onKeyDown={handleCategoryKey}
                     aria-haspopup="listbox"
                     aria-expanded={dropdownOpen}
-                    aria-labelledby="calc-cat-label"
+                    aria-controls="calc-category-list"
+                    aria-activedescendant={dropdownOpen ? `calc-category-${categories[activeCategory].id}` : undefined}
+                    aria-labelledby="calc-cat-label calc-current-category"
                   >
                     <span className="calc-cat-selected-preview">
                       <span className="calc-cat-emoji" aria-hidden="true">
                         {selectedCategory.icon}
                       </span>
-                      <span className="calc-cat-name">{selectedCategory.name}</span>
+                      <span className="calc-cat-name" id="calc-current-category">{selectedCategory.name}</span>
                     </span>
                     <span className="calc-chevron" aria-hidden="true">
                       <svg
@@ -244,23 +292,25 @@ export default function ExpenseCalculator() {
                   {dropdownOpen && (
                     <div
                       className="calc-dropdown-menu"
+                      id="calc-category-list"
                       role="listbox"
                       aria-labelledby="calc-cat-label"
                     >
-                      {categories.map((c) => {
+                      {categories.map((c, index) => {
                         const isSelected = c.id === selectedCatId;
                         return (
                           <div
                             key={c.id}
+                            id={`calc-category-${c.id}`}
+                            data-active={index === activeCategory}
                             className={`calc-dropdown-option ${
                               isSelected ? 'selected' : ''
                             }`}
                             role="option"
                             aria-selected={isSelected}
-                            onClick={() => {
-                              setSelectedCatId(c.id);
-                              setDropdownOpen(false);
-                            }}
+                            onMouseDown={event => event.preventDefault()}
+                            onMouseEnter={() => setActiveCategory(index)}
+                            onClick={() => selectCategory(index)}
                           >
                             <span className="calc-opt-left">
                               <span className="calc-cat-emoji" aria-hidden="true">

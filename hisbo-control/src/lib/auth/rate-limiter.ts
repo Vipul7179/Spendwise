@@ -100,6 +100,12 @@ export function recordFailedAttempt(key: string): {
   const now = Date.now();
   let entry = store.get(key);
 
+  // A response from an already-running attempt may arrive after the observation
+  // window ends. It must not reset a lockout established by another response.
+  if (entry?.lockedUntil && now < entry.lockedUntil) {
+    return { locked: true, remaining: 0, retryAfterSeconds: Math.max(1, Math.ceil((entry.lockedUntil - now) / 1000)) };
+  }
+
   if (!entry || now - entry.firstAttemptAt > RATE_LIMIT_CONFIG.WINDOW_MS) {
     entry = {
       failedAttempts: 1,

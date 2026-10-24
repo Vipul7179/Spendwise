@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque } from 'next/font/google';
 import './globals.css';
 import { SITE_URL } from '@/lib/seo';
+import { THEME_INIT_SCRIPT } from '@/lib/theme';
 
 import LegacyHashHandler from '@/components/common/LegacyHashHandler';
 import NavigationHistory from '@/components/common/NavigationFeedback';
@@ -43,7 +44,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={bricolage.variable}>
+    <html lang="en" className={bricolage.variable} suppressHydrationWarning>
+      <head><script id="hisbo-theme-init" dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} /></head>
       <body>
         <noscript><style>{'.image-frame > img{opacity:1!important}.image-skeleton,.image-fallback{display:none!important}'}</style></noscript>
         <LegacyHashHandler />

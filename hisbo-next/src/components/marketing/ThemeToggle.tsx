@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useSyncExternalStore } from 'react';
+import { restoreTheme } from '@/lib/theme';
 
 interface ThemeToggleProps {
   compact?: boolean;
@@ -10,7 +11,15 @@ interface ThemeToggleProps {
 const THEME_CHANGE_EVENT = 'hisbo_theme_change';
 
 function subscribeTheme(callback: () => void) {
-  window.addEventListener('storage', callback);
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === null || event.key === 'sw_theme' || event.key === 'spendwise_v1') {
+      restoreTheme();
+      callback();
+    }
+  };
+  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+  systemTheme.addEventListener('change', callback);
+  window.addEventListener('storage', onStorage);
   window.addEventListener(THEME_CHANGE_EVENT, callback);
 
   let observer: MutationObserver | null = null;
@@ -23,7 +32,8 @@ function subscribeTheme(callback: () => void) {
   }
 
   return () => {
-    window.removeEventListener('storage', callback);
+    window.removeEventListener('storage', onStorage);
+    systemTheme.removeEventListener('change', callback);
     window.removeEventListener(THEME_CHANGE_EVENT, callback);
     if (observer) observer.disconnect();
   };
@@ -34,15 +44,14 @@ function getThemeSnapshot(): 'light' | 'dark' {
   const attr = document.documentElement.getAttribute('data-theme');
   if (attr === 'dark' || attr === 'light') return attr;
   try {
-    const saved = localStorage.getItem('sw_theme');
-    if (saved === 'dark' || saved === 'light') return saved;
     const raw = localStorage.getItem('spendwise_v1');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed.theme === 'dark' || parsed.theme === 'light') return parsed.theme;
-    }
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
+    const saved = raw ? JSON.parse(raw)?.theme : undefined;
+    const swTheme = localStorage.getItem('sw_theme');
+    if (saved === 'auto' || swTheme === 'auto') {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+      return 'light';
     }
   } catch {
     // Local storage access error fallback

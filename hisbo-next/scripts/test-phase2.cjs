@@ -4,10 +4,11 @@ const runtime = require('./helpers/source-runtime.cjs');
 const clone = value => JSON.parse(JSON.stringify(value));
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
-function appFixture({ signedIn = true, guest = false, saved, readFailure = false, writeFailure = false, pending = false, now } = {}) {
+function appFixture({ signedIn = true, guest = false, saved, readFailure = false, writeFailure = false, pending = false, now, marketingTheme } = {}) {
   const hooks = [], effects = [], timers = new Map(), storage = new Map();
   const cloud = { cats: [{ id: 'food', name: 'Food', limit: 10000 }], exps: [], rec: [], alerts: [], goals: [], groups: [], fired: {}, name: 'Test', theme: 'dark', hide: false };
   if (saved) storage.set('spendwise_v1', JSON.stringify(saved));
+  if (marketingTheme) storage.set('sw_theme', marketingTheme);
   if (guest) storage.set('sw_guest', '1');
   if (pending) storage.set('sw_pending_user', 'fixture-user');
   let cursor = 0, firstRender = true, signOutCount = 0, authListener;
@@ -341,11 +342,20 @@ test('guest CRUD, savings milestones, group settlement and settings survive synt
   await fixture.unmount(); await reloaded.unmount();
 });
 
+test('first guest entry keeps the landing theme and existing app auto/light/dark cycling', async () => {
+  const f = appFixture({ signedIn: false, guest: true, marketingTheme: 'dark' });
+  await f.boot(); assert.equal(f.render().state.theme, 'dark');
+  f.render().cycleTheme(); assert.equal(f.render().state.theme, 'auto'); assert.equal(f.storage.has('sw_theme'), false);
+  f.render().cycleTheme(); assert.equal(f.render().state.theme, 'light'); assert.equal(f.storage.get('sw_theme'), 'light');
+  assert.equal(f.writes.length, 0, 'Guest preferences must not write to Supabase');
+  await f.unmount();
+});
+
 test('guest confirmation never establishes guest mode before explicit acceptance', () => {
   let open = false;
   const storage = new Map(), routes = [];
   const { default: Entry } = runtime({
-    react: { useState: initial => [open || initial, value => { open = value; }] },
+    react: { useState: initial => [open || initial, value => { open = value; }], useRef: value => ({ current: value }), useEffect() {} },
     'react/jsx-runtime': { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }) },
     'next/navigation': { useRouter: () => ({ push: route => routes.push(route) }) },
     'next/link': { default: 'Link' },

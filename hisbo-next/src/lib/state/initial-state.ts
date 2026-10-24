@@ -29,7 +29,7 @@ export const INITIAL_STATE: AppState = {
   fired: {},
   phone: '',
   chan: 'wa',
-  theme: 'auto',
+  theme: 'light',
   hide: false,
   mailOn: false,
   ct: 'donut',
